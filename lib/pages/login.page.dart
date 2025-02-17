@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:quip/pages/user_profile.page.dart'; // Add this import
 import 'package:quip/widget/button.dart';
 import 'package:quip/widget/first.dart';
 import 'package:quip/widget/inputEmail.dart';
@@ -12,6 +16,35 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+
+  Future<User?> _signInWithGoogle() async {
+    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser!.authentication;
+    final AuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    final UserCredential userCredential =
+        await _auth.signInWithCredential(credential);
+    final User? user = userCredential.user;
+
+    if (user != null) {
+      // Store user details in Firestore
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'name': user.displayName,
+        'email': user.email,
+        'photoURL': user.photoURL,
+        // Add other details such as date of birth, number, and gender if available
+      });
+    }
+
+    return user;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,22 +66,25 @@ class _LoginPageState extends State<LoginPage> {
                 InputEmail(),
                 PasswordInput(),
                 ButtonLogin(),
-                // Ensure the correct widget is used
                 SizedBox(height: 20),
-                // Add some space between the button and the Google sign-in
                 GestureDetector(
-                  onTap: () {
-                    // Handle Google sign-in
+                  onTap: () async {
+                    User? user = await _signInWithGoogle();
+                    if (user != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UserProfilePage(user: user),
+                        ),
+                      );
+                    }
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                     decoration: BoxDecoration(
                       color: Colors.black,
-                      // Change background color to black
                       borderRadius: BorderRadius.circular(30),
-                      // Make the button fully rounded
                       border: Border.all(color: Colors.white),
-                      // Change border color to white
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black87,
@@ -62,7 +98,6 @@ class _LoginPageState extends State<LoginPage> {
                       children: <Widget>[
                         Image.network(
                           'https://cdn-icons-png.flaticon.com/512/300/300221.png',
-                          // New Google icon URL
                           height: 20,
                         ),
                         SizedBox(width: 10),
@@ -70,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                           'Sign In with Google',
                           style: TextStyle(
                             fontSize: 20,
-                            color: Colors.white, // Change text color to white
+                            color: Colors.white,
                           ),
                         ),
                       ],
