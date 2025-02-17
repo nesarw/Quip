@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "810458437553",
+    "project_id": "quip-cf207",
+    "storage_bucket": "quip-cf207.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:810458437553:android:322796e2b9da8f71cf0f90",
+        "android_client_info": {
+          "package_name": "com.example.quip"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGRc3V82IbJDHArWCNg1pixT3MgHS-Yzo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
