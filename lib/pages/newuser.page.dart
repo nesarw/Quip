@@ -63,18 +63,17 @@ class _NewUserState extends State<NewUser> {
     }
 
     try {
-      // Debugging statements
-      print('Name: $name');
-      print('Email: $email');
-      print('Password: $password');
-
-      // Store user details in Firestore first
-      DocumentReference userDoc = FirebaseFirestore.instance.collection('users').doc();
-      await userDoc.set({
-        'name': name,
-        'email': email,
-        'password': password, // Note: Storing passwords in Firestore is not recommended
-      });
+      // Check if the email already exists in Firebase Authentication
+      List<String> signInMethods = await _auth.fetchSignInMethodsForEmail(email);
+      if (signInMethods.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Email already in use.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
 
       // Create user in Firebase Authentication
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
@@ -84,9 +83,13 @@ class _NewUserState extends State<NewUser> {
       User? user = userCredential.user;
 
       if (user != null) {
-        // Update Firestore document with the user's UID
-        await userDoc.update({
+        // Store user details in Firestore
+        DocumentReference userDoc = FirebaseFirestore.instance.collection('users').doc(user.uid);
+        await userDoc.set({
+          'name': name,
+          'email': email,
           'uid': user.uid,
+          'password': password, // Store the password in Firestore
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
