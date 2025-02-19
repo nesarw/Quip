@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class PasswordInput extends StatefulWidget {
   final TextEditingController controller;
+  final bool obscureText; // Add this parameter
 
-  PasswordInput({required this.controller});
+  PasswordInput({required this.controller, this.obscureText = true}); // Update constructor
 
   @override
   _PasswordInputState createState() => _PasswordInputState();
@@ -19,6 +20,7 @@ class _PasswordInputState extends State<PasswordInput> {
         width: MediaQuery.of(context).size.width,
         child: TextField(
           controller: widget.controller,
+          obscureText: widget.obscureText, // Use the parameter here
           style: TextStyle(
             color: Colors.white,
           ),

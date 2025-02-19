@@ -36,6 +36,32 @@ class _NewUserState extends State<NewUser> {
       return;
     }
 
+    // Email validation
+    String emailPattern = r'^[a-zA-Z0-9._%+-]+@gmail\.com$';
+    RegExp emailRegExp = RegExp(emailPattern);
+    if (!emailRegExp.hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Invalid email format.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    // Password validation
+    String passwordPattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$';
+    RegExp passwordRegExp = RegExp(passwordPattern);
+    if (!passwordRegExp.hasMatch(password)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Password must be at least 8 characters long and include 1 upper, 1 lower, 1 special, and 1 number character'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     try {
       // Debugging statements
       print('Name: $name');
@@ -110,7 +136,10 @@ class _NewUserState extends State<NewUser> {
                 ),
                 NewNome(controller: _nameController),
                 NewEmail(controller: _emailController),
-                PasswordInput(controller: _passwordController),
+                PasswordInput(
+                  controller: _passwordController,
+                  obscureText: true, // Make the password field masked
+                ),
                 ButtonNewUser(onPressed: _registerNewUser),
                 SizedBox(height: 20),
                 UserOld(),
