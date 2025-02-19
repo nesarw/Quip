@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+// Remove the Google Sign-In import
+// import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quip/pages/user_profile.page.dart'; // Add this import
 import 'package:quip/widget/button.dart';
 import 'package:quip/widget/first.dart';
@@ -9,6 +10,7 @@ import 'package:quip/widget/inputEmail.dart';
 import 'package:quip/widget/password.dart';
 import 'package:quip/widget/textLogin.dart';
 import 'package:quip/widget/verticalText.dart';
+import 'package:quip/pages/connections.page.dart'; // Import the connections page
 
 class LoginPage extends StatefulWidget {
   @override
@@ -17,33 +19,65 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Future<User?> _signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser!.authentication;
-    final AuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
+  Future<void> _signInWithEmailAndPassword() async {
+    String email = _emailController.text;
+    String password = _passwordController.text;
 
-    final UserCredential userCredential =
-        await _auth.signInWithCredential(credential);
-    final User? user = userCredential.user;
-
-    if (user != null) {
-      // Store user details in Firestore
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'name': user.displayName,
-        'email': user.email,
-        'photoURL': user.photoURL,
-        // Add other details such as date of birth, number, and gender if available
-      });
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Email and password are required'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
     }
 
-    return user;
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      User? user = userCredential.user;
+
+      if (user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ConnectionsPage(user: user)),
+        );
+      }
+    } catch (e) {
+      String errorMessage;
+      if (e is FirebaseAuthException) {
+        switch (e.code) {
+          case 'invalid-email':
+            errorMessage = 'The email address is not valid.';
+            break;
+          case 'user-disabled':
+            errorMessage = 'The user account has been disabled.';
+            break;
+          case 'user-not-found':
+            errorMessage = 'No user found for that email.';
+            break;
+          case 'wrong-password':
+            errorMessage = 'Wrong password provided.';
+            break;
+          default:
+            errorMessage = 'An unknown error occurred.';
+        }
+      } else {
+        errorMessage = 'An unknown error occurred.';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to sign in: $errorMessage'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
@@ -64,55 +98,10 @@ class _LoginPageState extends State<LoginPage> {
                   VerticalText(),
                   TextLogin(),
                 ]),
-                InputEmail(),
+                InputEmail(controller: _emailController),
                 PasswordInput(controller: _passwordController),
-                ButtonLogin(),
+                ButtonLogin(onPressed: _signInWithEmailAndPassword),
                 SizedBox(height: 20),
-                GestureDetector(
-                  onTap: () async {
-                    User? user = await _signInWithGoogle();
-                    if (user != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UserProfilePage(user: user),
-                        ),
-                      );
-                    }
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: Colors.white),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black87,
-                          blurRadius: 5,
-                          offset: Offset(5, 10),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Image.network(
-                          'https://cdn-icons-png.flaticon.com/512/300/300221.png',
-                          height: 20,
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          'Sign In with Google',
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
                 FirstTime(),
               ],
             ),

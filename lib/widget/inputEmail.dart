@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class InputEmail extends StatefulWidget {
+  final TextEditingController controller;
+
+  InputEmail({required this.controller});
+
   @override
   _InputEmailState createState() => _InputEmailState();
 }
@@ -14,6 +18,7 @@ class _InputEmailState extends State<InputEmail> {
         height: 60,
         width: MediaQuery.of(context).size.width,
         child: TextField(
+          controller: widget.controller,
           style: TextStyle(
             color: Colors.white,
           ),

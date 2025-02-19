@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-class ButtonLogin extends StatefulWidget {
-  @override
-  _ButtonLoginState createState() => _ButtonLoginState();
-}
+class ButtonLogin extends StatelessWidget {
+  final VoidCallback onPressed;
 
-class _ButtonLoginState extends State<ButtonLogin> {
+  ButtonLogin({required this.onPressed});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -30,7 +29,7 @@ class _ButtonLoginState extends State<ButtonLogin> {
           borderRadius: BorderRadius.circular(30),
         ),
         child: TextButton(
-          onPressed: () {},
+          onPressed: onPressed,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -42,7 +41,6 @@ class _ButtonLoginState extends State<ButtonLogin> {
                   fontWeight: FontWeight.w400,
                 ),
               ),
-
             ],
           ),
         ),

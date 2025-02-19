@@ -3,8 +3,13 @@ import 'package:quip/widget/bottom_navigation_bar.dart'; // Add this import
 import 'package:quip/pages/quipp_inbox.page.dart'; // Add this import
 import 'package:quip/pages/user_profile.page.dart'; // Add this import
 import 'package:quip/pages/quipp_now.page.dart'; // Add this import
+import 'package:firebase_auth/firebase_auth.dart'; // Add this import
 
 class ConnectionsPage extends StatefulWidget {
+  final User user;
+
+  ConnectionsPage({required this.user});
+
   @override
   _ConnectionsPageState createState() => _ConnectionsPageState();
 }
@@ -12,11 +17,17 @@ class ConnectionsPage extends StatefulWidget {
 class _ConnectionsPageState extends State<ConnectionsPage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [
-    ConnectionsPageContent(),
-    QuippInboxPage(),
-    UserProfilePage(),
-  ];
+  final List<Widget> _pages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _pages.addAll([
+      ConnectionsPageContent(user: widget.user),
+      QuippInboxPage(),
+      UserProfilePage(user: widget.user),
+    ]);
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -33,7 +44,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
           onQuippNowComplete: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => ConnectionsPage()),
+              MaterialPageRoute(builder: (context) => ConnectionsPage(user: widget.user)),
             );
           },
         ),
@@ -57,6 +68,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 }
 
 class ConnectionsPageContent extends StatelessWidget {
+  final User user;
   final List<String> connections = [
     'Aarav Sharma',
     'Vivaan Patel',
@@ -74,6 +86,8 @@ class ConnectionsPageContent extends StatelessWidget {
     'Kabir Chatterjee',
     'Ritvik Bhatt',
   ];
+
+  ConnectionsPageContent({required this.user});
 
   @override
   Widget build(BuildContext context) {
