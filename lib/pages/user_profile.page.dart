@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Add this import
 import 'package:quip/widget/bottom_navigation_bar.dart'; // Add this import
 
 class UserProfilePage extends StatefulWidget {
@@ -24,7 +25,20 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void initState() {
     super.initState();
-    _fetchUserName();
+    _loadUserName();
+  }
+
+  Future<void> _loadUserName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? cachedName = prefs.getString('userName');
+
+    if (cachedName != null) {
+      setState(() {
+        userName = cachedName;
+      });
+    } else {
+      _fetchUserName();
+    }
   }
 
   Future<void> _fetchUserName() async {
@@ -33,6 +47,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
       setState(() {
         userName = userDoc['name'];
       });
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('userName', userName);
     }
   }
 

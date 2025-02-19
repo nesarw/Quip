@@ -1,16 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-// Remove the Google Sign-In import
 // import 'package:google_sign_in/google_sign_in.dart';
-import 'package:quip/pages/user_profile.page.dart'; // Add this import
+import 'package:quip/pages/user_profile.page.dart';
 import 'package:quip/widget/button.dart';
 import 'package:quip/widget/first.dart';
 import 'package:quip/widget/inputEmail.dart';
 import 'package:quip/widget/password.dart';
 import 'package:quip/widget/textLogin.dart';
 import 'package:quip/widget/verticalText.dart';
-import 'package:quip/pages/connections.page.dart'; // Import the connections page
+import 'package:quip/pages/connections.page.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -31,10 +30,12 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _checkUserSession() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ConnectionsPage(user: user)),
-      );
+      Future.microtask(() {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ConnectionsPage(user: user)),
+        );
+      });
     }
   }
 
@@ -53,6 +54,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     try {
+      print('Attempting to sign in with email: $email');
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -60,14 +62,18 @@ class _LoginPageState extends State<LoginPage> {
       User? user = userCredential.user;
 
       if (user != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => ConnectionsPage(user: user)),
-        );
+        print('Successfully signed in: ${user.uid}');
+        Future.microtask(() {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ConnectionsPage(user: user)),
+          );
+        });
       }
     } catch (e) {
       String errorMessage;
       if (e is FirebaseAuthException) {
+        errorMessage = 'Error code: ${e.code}, Message: ${e.message}';
         switch (e.code) {
           case 'invalid-email':
             errorMessage = 'The email address is not valid.';
@@ -85,8 +91,9 @@ class _LoginPageState extends State<LoginPage> {
             errorMessage = 'An unknown error occurred.';
         }
       } else {
-        errorMessage = 'An unknown error occurred.';
+        errorMessage = 'Invalid Email/Password ${e.toString()}';
       }
+      print('Failed to sign in: $errorMessage');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to sign in: $errorMessage'),
