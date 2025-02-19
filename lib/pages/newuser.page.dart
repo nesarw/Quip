@@ -6,6 +6,8 @@ import 'package:quip/widget/password.dart';
 import 'package:quip/widget/singup.dart';
 import 'package:quip/widget/textNew.dart';
 import 'package:quip/widget/userOld.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:quip/pages/login.page.dart'; // Import the login page
 
 class NewUser extends StatefulWidget {
   @override
@@ -13,6 +15,79 @@ class NewUser extends StatefulWidget {
 }
 
 class _NewUserState extends State<NewUser> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _validateEmail(String email) {
+    final RegExp emailRegExp = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    return emailRegExp.hasMatch(email);
+  }
+
+  bool _validatePassword(String password) {
+    final RegExp passwordRegExp = RegExp(
+      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',
+    );
+    return passwordRegExp.hasMatch(password);
+  }
+
+  Future<void> _registerNewUser() async {
+    String name = _nameController.text;
+    String email = _emailController.text;
+    String password = _passwordController.text;
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('All fields are required'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    if (!_validateEmail(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Invalid email format'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    if (!_validatePassword(password)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    await FirebaseFirestore.instance.collection('users').add({
+      'name': name,
+      'email': email,
+      'password': password,
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Account created'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    // Redirect to the login page
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,10 +108,10 @@ class _NewUserState extends State<NewUser> {
                     TextNew(),
                   ],
                 ),
-                NewNome(),
-                NewEmail(),
-                PasswordInput(),
-                ButtonNewUser(),
+                NewNome(controller: _nameController),
+                NewEmail(controller: _emailController),
+                PasswordInput(controller: _passwordController),
+                ButtonNewUser(onPressed: _registerNewUser),
                 SizedBox(height: 20),
                 // Add some space between the button and the Google sign-in
                 GestureDetector(

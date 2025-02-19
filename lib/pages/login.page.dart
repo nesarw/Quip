@@ -18,6 +18,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final TextEditingController _passwordController = TextEditingController();
 
   Future<User?> _signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -64,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
                   TextLogin(),
                 ]),
                 InputEmail(),
-                PasswordInput(),
+                PasswordInput(controller: _passwordController),
                 ButtonLogin(),
                 SizedBox(height: 20),
                 GestureDetector(

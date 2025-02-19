@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class PasswordInput extends StatefulWidget {
+  final TextEditingController controller;
+
+  PasswordInput({required this.controller});
+
   @override
   _PasswordInputState createState() => _PasswordInputState();
 }
@@ -14,6 +18,7 @@ class _PasswordInputState extends State<PasswordInput> {
         height: 60,
         width: MediaQuery.of(context).size.width,
         child: TextField(
+          controller: widget.controller,
           style: TextStyle(
             color: Colors.white,
           ),

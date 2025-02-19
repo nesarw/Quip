@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-class ButtonNewUser extends StatefulWidget {
-  @override
-  _ButtonNewUserState createState() => _ButtonNewUserState();
-}
+class ButtonNewUser extends StatelessWidget {
+  final VoidCallback onPressed;
 
-class _ButtonNewUserState extends State<ButtonNewUser> {
+  ButtonNewUser({required this.onPressed});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -28,9 +27,7 @@ class _ButtonNewUserState extends State<ButtonNewUser> {
           ],
             color: Colors.white, borderRadius: BorderRadius.circular(30)),
         child: TextButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
+          onPressed: onPressed,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
