@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-// import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quip/pages/user_profile.page.dart';
 import 'package:quip/widget/button.dart';
 import 'package:quip/widget/first.dart';
@@ -18,6 +18,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -102,6 +103,49 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        return; // The user canceled the sign-in
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        final userData = {
+          'name': user.displayName,
+          'email': user.email,
+          'photoURL': user.photoURL,
+        };
+
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set(userData);
+
+        Future.microtask(() {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => ConnectionsPage(user: user)),
+          );
+        });
+      }
+    } catch (e) {
+      print('Failed to sign in with Google: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to sign in with Google: ${e.toString()}'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,6 +167,38 @@ class _LoginPageState extends State<LoginPage> {
                 InputEmail(controller: _emailController),
                 PasswordInput(controller: _passwordController),
                 ButtonLogin(onPressed: _signInWithEmailAndPassword),
+                SizedBox(height: 20),
+                GestureDetector(
+                  onTap: _signInWithGoogle,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Row(
+                          children: <Widget>[
+                            Image.network(
+                              'https://cdn-icons-png.flaticon.com/512/300/300221.png',
+                              height: 20,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'Sign In with Google',
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 SizedBox(height: 20),
                 FirstTime(),
               ],
