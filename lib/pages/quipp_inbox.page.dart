@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Add this import
 import 'package:quip/widget/bottom_navigation_bar.dart'; // Add this import
 
 class QuippInboxPage extends StatefulWidget {
+  final User user;
+
+  QuippInboxPage({required this.user});
+
   @override
   _QuippInboxPageState createState() => _QuippInboxPageState();
 }

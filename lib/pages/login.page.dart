@@ -22,6 +22,22 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    _checkUserSession();
+  }
+
+  Future<void> _checkUserSession() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => ConnectionsPage(user: user)),
+      );
+    }
+  }
+
   Future<void> _signInWithEmailAndPassword() async {
     String email = _emailController.text;
     String password = _passwordController.text;

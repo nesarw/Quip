@@ -24,7 +24,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
     super.initState();
     _pages.addAll([
       ConnectionsPageContent(user: widget.user),
-      QuippInboxPage(),
+      QuippInboxPage(user: widget.user),
       UserProfilePage(user: widget.user),
     ]);
   }
@@ -47,6 +47,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
               MaterialPageRoute(builder: (context) => ConnectionsPage(user: widget.user)),
             );
           },
+          user: widget.user, // Pass the user session
         ),
       ),
     );

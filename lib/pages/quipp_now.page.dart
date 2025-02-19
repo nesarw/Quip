@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:firebase_auth/firebase_auth.dart'; // Add this import
 import 'connections.page.dart'; // Update this import
 
 class QuippNowPage extends StatefulWidget {
   final String username;
   final VoidCallback onQuippNowComplete;
+  final User user; // Add this parameter
 
-  QuippNowPage({required this.username, required this.onQuippNowComplete});
+  QuippNowPage({required this.username, required this.onQuippNowComplete, required this.user}); // Update constructor
 
   @override
   _QuippNowPageState createState() => _QuippNowPageState();

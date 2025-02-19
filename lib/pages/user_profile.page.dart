@@ -1,5 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:quip/widget/bottom_navigation_bar.dart'; // Add this import
 
@@ -14,11 +14,27 @@ class UserProfilePage extends StatefulWidget {
 
 class _UserProfilePageState extends State<UserProfilePage> {
   int _selectedIndex = 2; // Set the selected index to 2 for the profile page
+  String userName = 'John Doe'; // Default value
 
   final List<String> topQuips = [
     'Top Quip 1: This is the first top quip.',
     'Top Quip 2: This is the second top quip.',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserName();
+  }
+
+  Future<void> _fetchUserName() async {
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
+    if (userDoc.exists) {
+      setState(() {
+        userName = userDoc['name'];
+      });
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -70,17 +86,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            'Name: John Doe',
+                            'Name: $userName', // Display the fetched user name
                             style: TextStyle(color: Colors.white, fontSize: 18),
                           ),
                           SizedBox(height: 8),
                           Text(
-                            'Date of Birth: January 1, 1990',
-                            style: TextStyle(color: Colors.white, fontSize: 18),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Gender: Male',
+                            'Email: ${widget.user.email}',
                             style: TextStyle(color: Colors.white, fontSize: 18),
                           ),
                         ],
