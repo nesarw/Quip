@@ -1,0 +1,2 @@
+/Users/nesar/AndroidStudioProjects/Quip/android/app/.cxx/Debug/s11f553d/x86/CMakeFiles/edit_cache.dir
+/Users/nesar/AndroidStudioProjects/Quip/android/app/.cxx/Debug/s11f553d/x86/CMakeFiles/rebuild_cache.dir
