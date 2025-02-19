@@ -73,7 +73,6 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       String errorMessage;
       if (e is FirebaseAuthException) {
-        errorMessage = 'Error code: ${e.code}, Message: ${e.message}';
         switch (e.code) {
           case 'invalid-email':
             errorMessage = 'The email address is not valid.';
@@ -91,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
             errorMessage = 'An unknown error occurred.';
         }
       } else {
-        errorMessage = 'Invalid Email/Password ${e.toString()}';
+        errorMessage = 'An unknown error occurred: ${e.toString()}';
       }
       print('Failed to sign in: $errorMessage');
       ScaffoldMessenger.of(context).showSnackBar(
