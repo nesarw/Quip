@@ -26,15 +26,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   final List<String> genders = ['Male', 'Female', 'Other', "Don't want to say"];
 
-  final List<String> topQuips = [
-    'Top Quip 1: This is the first top quip.',
-    'Top Quip 2: This is the second top quip.',
-  ];
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _checkUserDataInDatabase();
+  }
+
+  Future<void> _checkUserDataInDatabase() async {
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
+    if (userDoc.exists) {
+      _loadUserData();
+    } else {
+      _fetchUserData();
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -49,8 +54,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
       setState(() {
         userName = cachedName;
       });
-    } else {
-      _fetchUserData();
     }
 
     if (cachedDateOfBirth != null) {

@@ -20,6 +20,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
   String userName = 'John Doe'; // Default value
   String? photoURL; // Add this variable
   File? _image; // Add this variable
+  DateTime? dateOfBirth;
+  String mobileNumber = '+91';
+  String gender = '';
 
   final List<String> topQuips = [
     'Top Quip 1: This is the first top quip.',
@@ -29,28 +32,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? cachedName = prefs.getString('userName');
-    String? cachedPhotoURL = prefs.getString('photoURL');
-
-    if (cachedName != null) {
-      setState(() {
-        userName = cachedName;
-      });
-    } else {
-      _fetchUserData();
-    }
-
-    if (cachedPhotoURL != null) {
-      setState(() {
-        photoURL = cachedPhotoURL;
-        _image = File(photoURL!);
-      });
-    }
+    _fetchUserData();
   }
 
   Future<void> _fetchUserData() async {
@@ -59,6 +41,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
       setState(() {
         userName = userDoc['name'];
         photoURL = userDoc['photoURL'];
+        dateOfBirth = userDoc['dateOfBirth'] != null ? DateTime.parse(userDoc['dateOfBirth']) : null;
+        mobileNumber = userDoc['mobileNumber'] ?? '+91';
+        gender = userDoc['gender'] ?? '';
         if (photoURL != null) {
           _image = File(photoURL!);
         }
@@ -69,6 +54,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
       if (photoURL != null) {
         prefs.setString('photoURL', photoURL!);
       }
+      prefs.setString('dateOfBirth', dateOfBirth?.toLocal().toString().split(' ')[0] ?? '');
+      prefs.setString('mobileNumber', mobileNumber);
+      prefs.setString('gender', gender);
     }
   }
 
@@ -143,7 +131,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                               ),
                               padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                             ),
-                            onPressed: () {
+                            onPressed: () async {
+                              await _fetchUserData();
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => EditProfilePage(user: widget.user)),

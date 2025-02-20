@@ -120,13 +120,17 @@ class _LoginPageState extends State<LoginPage> {
       final User? user = userCredential.user;
 
       if (user != null) {
-        final userData = {
-          'name': user.displayName,
-          'email': user.email,
-          'photoURL': user.photoURL,
-        };
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
 
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set(userData);
+        if (!userDoc.exists) {
+          final userData = {
+            'name': user.displayName,
+            'email': user.email,
+            'photoURL': user.photoURL,
+          };
+
+          await FirebaseFirestore.instance.collection('users').doc(user.uid).set(userData);
+        }
 
         Future.microtask(() {
           Navigator.pushReplacement(
