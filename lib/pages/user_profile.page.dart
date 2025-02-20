@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Add this import
 import 'package:quip/widget/bottom_navigation_bar.dart'; // Add this import
+import 'package:quip/pages/edit_profile.page.dart'; // Add this import
+import 'dart:io'; // Add this import
 
 class UserProfilePage extends StatefulWidget {
   final User user;
@@ -16,6 +18,8 @@ class UserProfilePage extends StatefulWidget {
 class _UserProfilePageState extends State<UserProfilePage> {
   int _selectedIndex = 2; // Set the selected index to 2 for the profile page
   String userName = 'John Doe'; // Default value
+  String? photoURL; // Add this variable
+  File? _image; // Add this variable
 
   final List<String> topQuips = [
     'Top Quip 1: This is the first top quip.',
@@ -25,30 +29,46 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadUserName();
+    _loadUserData();
   }
 
-  Future<void> _loadUserName() async {
+  Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? cachedName = prefs.getString('userName');
+    String? cachedPhotoURL = prefs.getString('photoURL');
 
     if (cachedName != null) {
       setState(() {
         userName = cachedName;
       });
     } else {
-      _fetchUserName();
+      _fetchUserData();
+    }
+
+    if (cachedPhotoURL != null) {
+      setState(() {
+        photoURL = cachedPhotoURL;
+        _image = File(photoURL!);
+      });
     }
   }
 
-  Future<void> _fetchUserName() async {
+  Future<void> _fetchUserData() async {
     DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
     if (userDoc.exists) {
       setState(() {
         userName = userDoc['name'];
+        photoURL = userDoc['photoURL'];
+        if (photoURL != null) {
+          _image = File(photoURL!);
+        }
       });
+
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('userName', userName);
+      if (photoURL != null) {
+        prefs.setString('photoURL', photoURL!);
+      }
     }
   }
 
@@ -95,7 +115,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                     children: <Widget>[
                       CircleAvatar(
                         radius: 50,
-                        backgroundImage: AssetImage('assets/profile_photo.jpg'), // Replace with actual image asset
+                        backgroundImage: _image != null
+                            ? FileImage(_image!)
+                            : AssetImage('assets/profile_photo.jpg') as ImageProvider,
                       ),
                       SizedBox(width: 16),
                       Column(
@@ -109,6 +131,25 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           Text(
                             'Email: ${widget.user.email}',
                             style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                          SizedBox(height: 16),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black, // Set button color to black
+                              foregroundColor: Colors.white, // Set text color to white
+                              side: BorderSide(color: Colors.white, width: 2.0), // Add white outline
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30), // Rounded edges
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => EditProfilePage(user: widget.user)),
+                              );
+                            },
+                            child: Text('Edit Profile'),
                           ),
                         ],
                       ),

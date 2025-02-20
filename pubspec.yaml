@@ -16,6 +16,7 @@ dependencies:
   google_sign_in: ^6.2.2
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.0.13
+  image_picker: ^0.8.4+4  # Add this line
 
 dev_dependencies:
   flutter_test:
