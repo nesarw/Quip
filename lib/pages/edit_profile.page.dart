@@ -44,7 +44,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
       if (userDoc.exists) {
         setState(() {
-          userName = userDoc['name'];
+          userName = userDoc['name'] ?? widget.userName;
           selectedDate = userDoc['dateOfBirth'] != null ? DateTime.parse(userDoc['dateOfBirth']) : null;
           mobileNumber = userDoc['mobileNumber'] ?? '+91';
           gender = userDoc['gender'] ?? '';
@@ -125,6 +125,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
         duration: Duration(seconds: 2),
       ),
     );
+
+    // Redirect to connections page
+    Navigator.pushReplacementNamed(context, '/connections');
   }
 
   void _onItemTapped(int index) {

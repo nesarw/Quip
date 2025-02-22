@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quip/pages/login.page.dart';
+import 'package:quip/pages/connections.page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,12 +13,19 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+
     return MaterialApp(
       title: 'Quip',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoginPage(),
+      home: currentUser != null
+          ? ConnectionsPage(user: currentUser)
+          : LoginPage(),
+      routes: {
+        '/connections': (context) => ConnectionsPage(user: FirebaseAuth.instance.currentUser!),
+      },
     );
   }
 }

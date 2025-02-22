@@ -36,15 +36,19 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
     DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
     if (userDoc.exists) {
       Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
-      if (data['dateOfBirth'] == null || data['gender'] == null || data['mobileNumber'] == null) {
-        setState(() {
-          _isProfileIncomplete = true;
-        });
-      } else {
-        setState(() {
-          _isProfileIncomplete = false;
-        });
+      bool isIncomplete = false;
+      if (data['dateOfBirth'] == null) {
+        isIncomplete = true;
       }
+      if (data['gender'] == null) {
+        isIncomplete = true;
+      }
+      if (data['mobileNumber'] == null) {
+        isIncomplete = true;
+      }
+      setState(() {
+        _isProfileIncomplete = isIncomplete;
+      });
     }
     setState(() {
       _pages.clear();
