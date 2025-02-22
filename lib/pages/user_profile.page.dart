@@ -18,7 +18,7 @@ class UserProfilePage extends StatefulWidget {
 class _UserProfilePageState extends State<UserProfilePage> {
   int _selectedIndex = 2; // Set the selected index to 2 for the profile page
   String userName = 'John Doe'; // Default value
-  String? photoURL; // Add this variable
+  late Future<void> _userDataFuture; // Add this variable
 
   final List<String> topQuips = [
     'Top Quip 1: This is the first top quip.',
@@ -28,13 +28,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void initState() {
     super.initState();
-    _fetchUserData();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _fetchUserData();
+    _userDataFuture = _fetchUserData(); // Initialize the future
   }
 
   Future<void> _fetchUserData() async {
@@ -43,14 +37,10 @@ class _UserProfilePageState extends State<UserProfilePage> {
       if (userDoc.exists) {
         setState(() {
           userName = userDoc['name'];
-          photoURL = userDoc['photoURL'];
         });
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setString('userName', userName);
-        if (photoURL != null) {
-          prefs.setString('photoURL', photoURL!);
-        }
       }
     } catch (e) {
       print("Error fetching user data: $e");
@@ -72,7 +62,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder(
-        future: _fetchUserData(),
+        future: _userDataFuture, // Use the initialized future
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Container(
@@ -120,9 +110,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           children: <Widget>[
                             CircleAvatar(
                               radius: 50,
-                              backgroundImage: photoURL != null
-                                  ? NetworkImage(photoURL!)
-                                  : AssetImage('assets/profile_photo.jpg') as ImageProvider,
+                              backgroundImage: AssetImage('assets/profile_photo.jpg'),
                             ),
                             SizedBox(width: 16),
                             Column(

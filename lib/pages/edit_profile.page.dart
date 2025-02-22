@@ -27,6 +27,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   String gender = '';
   File? _image; // Add this variable
   final TextEditingController _mobileController = TextEditingController(text: '+91'); // Initialize with +91
+  late Future<void> _userDataFuture; // Add this variable
 
   final List<String> genders = ['Male', 'Female', 'Other', "Don't want to say"];
 
@@ -34,7 +35,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void initState() {
     super.initState();
     userName = widget.userName; // Initialize with the passed userName
-    _fetchUserData();
+    _userDataFuture = _fetchUserData(); // Initialize the future
   }
 
   Future<void> _fetchUserData() async {
@@ -47,9 +48,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
           mobileNumber = userDoc['mobileNumber'] ?? '+91';
           gender = userDoc['gender'] ?? '';
           _mobileController.text = mobileNumber;
-          if (userDoc['photoURL'] != null) {
-            _image = File(userDoc['photoURL']);
-          }
         });
       }
     } catch (e) {
@@ -142,7 +140,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder(
-        future: _fetchUserData(),
+        future: _userDataFuture, // Use the initialized future
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Container(
@@ -192,9 +190,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               children: [
                                 CircleAvatar(
                                   radius: 50,
-                                  backgroundImage: _image == null
-                                      ? AssetImage('assets/profile_photo.jpg')
-                                      : FileImage(_image!) as ImageProvider,
+                                  backgroundImage: AssetImage('assets/profile_photo.jpg'),
                                 ),
                                 Positioned(
                                   bottom: 0,
