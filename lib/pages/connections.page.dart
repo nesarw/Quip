@@ -4,6 +4,8 @@ import 'package:quip/pages/quipp_inbox.page.dart'; // Add this import
 import 'package:quip/pages/user_profile.page.dart'; // Add this import
 import 'package:quip/pages/quipp_now.page.dart'; // Add this import
 import 'package:firebase_auth/firebase_auth.dart'; // Add this import
+import 'package:quip/widget/profile_incomplete.widget.dart'; // Correct this import
+import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
 
 class ConnectionsPage extends StatefulWidget {
   final User user;
@@ -16,17 +18,35 @@ class ConnectionsPage extends StatefulWidget {
 
 class _ConnectionsPageState extends State<ConnectionsPage> {
   int _selectedIndex = 0;
+  bool _isProfileIncomplete = false; // Add this variable
+  bool _isLoading = true; // Add this variable
 
   final List<Widget> _pages = [];
 
   @override
   void initState() {
     super.initState();
-    _pages.addAll([
-      ConnectionsPageContent(user: widget.user),
-      QuippInboxPage(user: widget.user),
-      UserProfilePage(user: widget.user),
-    ]);
+    _checkProfileCompletion(); // Add this line
+  }
+
+  Future<void> _checkProfileCompletion() async {
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
+    if (userDoc.exists) {
+      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+      if (data['dateOfBirth'] == null || data['gender'] == null || data['mobileNumber'] == null) {
+        setState(() {
+          _isProfileIncomplete = true;
+        });
+      }
+    }
+    setState(() {
+      _pages.addAll([
+        ConnectionsPageContent(user: widget.user, isProfileIncomplete: _isProfileIncomplete), // Pass the variable
+        QuippInboxPage(user: widget.user),
+        UserProfilePage(user: widget.user),
+      ]);
+      _isLoading = false; // Update loading state
+    });
   }
 
   void _onItemTapped(int index) {
@@ -55,6 +75,9 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Center(child: CircularProgressIndicator()); // Show loading indicator
+    }
     return WillPopScope(
       onWillPop: () async => false, // Disable back navigation
       child: Scaffold(
@@ -70,6 +93,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 
 class ConnectionsPageContent extends StatelessWidget {
   final User user;
+  final bool isProfileIncomplete; // Add this variable
   final List<String> connections = [
     'Aarav Sharma',
     'Vivaan Patel',
@@ -88,7 +112,7 @@ class ConnectionsPageContent extends StatelessWidget {
     'Ritvik Bhatt',
   ];
 
-  ConnectionsPageContent({required this.user});
+  ConnectionsPageContent({required this.user, required this.isProfileIncomplete}); // Update constructor
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +130,8 @@ class ConnectionsPageContent extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start, // Align to the left
             children: <Widget>[
+              if (isProfileIncomplete) // Add this condition
+                ProfileIncomplete(user: user, userName: user.displayName ?? ''), // Add this line
               Padding(
                 padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0), // Add margin from the top
                 child: Text(
