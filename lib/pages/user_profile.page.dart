@@ -19,10 +19,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
   int _selectedIndex = 2; // Set the selected index to 2 for the profile page
   String userName = 'John Doe'; // Default value
   String? photoURL; // Add this variable
-  File? _image; // Add this variable
-  DateTime? dateOfBirth;
-  String mobileNumber = '+91';
-  String gender = '';
 
   final List<String> topQuips = [
     'Top Quip 1: This is the first top quip.',
@@ -38,30 +34,26 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _fetchUserData();
   }
 
   Future<void> _fetchUserData() async {
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
-    if (userDoc.exists) {
-      setState(() {
-        userName = userDoc['name'];
-        photoURL = userDoc['photoURL'];
-        dateOfBirth = userDoc['dateOfBirth'] != null ? DateTime.parse(userDoc['dateOfBirth']) : null;
-        mobileNumber = userDoc['mobileNumber'] ?? '+91';
-        gender = userDoc['gender'] ?? '';
-        if (photoURL != null) {
-          _image = File(photoURL!);
-        }
-      });
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
+      if (userDoc.exists) {
+        setState(() {
+          userName = userDoc['name'];
+          photoURL = userDoc['photoURL'];
+        });
 
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString('userName', userName);
-      if (photoURL != null) {
-        prefs.setString('photoURL', photoURL!);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('userName', userName);
+        if (photoURL != null) {
+          prefs.setString('photoURL', photoURL!);
+        }
       }
-      prefs.setString('dateOfBirth', dateOfBirth?.toLocal().toString().split(' ')[0] ?? '');
-      prefs.setString('mobileNumber', mobileNumber);
-      prefs.setString('gender', gender);
+    } catch (e) {
+      print("Error fetching user data: $e");
     }
   }
 
@@ -89,6 +81,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error loading user data',
+                style: TextStyle(color: Colors.white),
               ),
             );
           } else {
@@ -121,8 +120,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           children: <Widget>[
                             CircleAvatar(
                               radius: 50,
-                              backgroundImage: _image != null
-                                  ? FileImage(_image!)
+                              backgroundImage: photoURL != null
+                                  ? NetworkImage(photoURL!)
                                   : AssetImage('assets/profile_photo.jpg') as ImageProvider,
                             ),
                             SizedBox(width: 16),
@@ -149,11 +148,16 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                     ),
                                     padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                                   ),
-                                  onPressed: () async {
-                                    await _fetchUserData();
+                                  onPressed: () {
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => EditProfilePage(user: widget.user)),
+                                      MaterialPageRoute(
+                                        builder: (context) => EditProfilePage(
+                                          user: widget.user,
+                                          userName: userName,
+                                          email: widget.user.email!,
+                                        ),
+                                      ),
                                     );
                                   },
                                   child: Text('Edit Profile'),
