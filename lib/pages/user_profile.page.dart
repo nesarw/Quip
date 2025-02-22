@@ -18,6 +18,7 @@ class UserProfilePage extends StatefulWidget {
 class _UserProfilePageState extends State<UserProfilePage> {
   int _selectedIndex = 2; // Set the selected index to 2 for the profile page
   String userName = 'John Doe'; // Default value
+  String? photoURL; // Add this variable
   late Future<void> _userDataFuture; // Add this variable
 
   final List<String> topQuips = [
@@ -37,10 +38,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
       if (userDoc.exists) {
         setState(() {
           userName = userDoc['name'];
+          photoURL = userDoc['photoURL'];
         });
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setString('userName', userName);
+        if (photoURL != null) {
+          prefs.setString('photoURL', photoURL!);
+        }
       }
     } catch (e) {
       print("Error fetching user data: $e");
@@ -110,7 +115,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
                           children: <Widget>[
                             CircleAvatar(
                               radius: 50,
-                              backgroundImage: AssetImage('assets/profile_photo.jpg'),
+                              backgroundImage: photoURL != null
+                                  ? NetworkImage(photoURL!)
+                                  : AssetImage('assets/profile_photo.jpg') as ImageProvider,
                             ),
                             SizedBox(width: 16),
                             Column(

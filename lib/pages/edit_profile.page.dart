@@ -25,6 +25,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   DateTime? selectedDate;
   String mobileNumber = '+91'; // Default country code included
   String gender = '';
+  String? photoURL; // Add this variable
   File? _image; // Add this variable
   final TextEditingController _mobileController = TextEditingController(text: '+91'); // Initialize with +91
   late Future<void> _userDataFuture; // Add this variable
@@ -47,6 +48,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           selectedDate = userDoc['dateOfBirth'] != null ? DateTime.parse(userDoc['dateOfBirth']) : null;
           mobileNumber = userDoc['mobileNumber'] ?? '+91';
           gender = userDoc['gender'] ?? '';
+          photoURL = userDoc['photoURL'];
           _mobileController.text = mobileNumber;
         });
       }
@@ -190,7 +192,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               children: [
                                 CircleAvatar(
                                   radius: 50,
-                                  backgroundImage: AssetImage('assets/profile_photo.jpg'),
+                                  backgroundImage: photoURL != null
+                                      ? NetworkImage(photoURL!)
+                                      : AssetImage('assets/profile_photo.jpg') as ImageProvider,
                                 ),
                                 Positioned(
                                   bottom: 0,
