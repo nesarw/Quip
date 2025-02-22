@@ -30,6 +30,9 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   }
 
   Future<void> _checkProfileCompletion() async {
+    setState(() {
+      _isLoading = true; // Show loading indicator while checking profile
+    });
     DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
     if (userDoc.exists) {
       Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
@@ -37,9 +40,14 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
         setState(() {
           _isProfileIncomplete = true;
         });
+      } else {
+        setState(() {
+          _isProfileIncomplete = false;
+        });
       }
     }
     setState(() {
+      _pages.clear();
       _pages.addAll([
         ConnectionsPageContent(user: widget.user, isProfileIncomplete: _isProfileIncomplete), // Pass the variable
         QuippInboxPage(user: widget.user),
@@ -84,7 +92,10 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
         body: _pages[_selectedIndex],
         bottomNavigationBar: CustomBottomNavigationBar(
           currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
+          onTap: (index) {
+            _onItemTapped(index);
+            _checkProfileCompletion(); // Re-check profile completion on tab change
+          },
         ),
       ),
     );
