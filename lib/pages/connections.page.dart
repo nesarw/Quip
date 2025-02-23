@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:quip/widget/bottom_navigation_bar.dart'; // Add this import
-import 'package:quip/pages/quipp_inbox.page.dart'; // Add this import
-import 'package:quip/pages/user_profile.page.dart'; // Add this import
-import 'package:quip/pages/quipp_now.page.dart'; // Add this import
-import 'package:firebase_auth/firebase_auth.dart'; // Add this import
-import 'package:quip/widget/profile_incomplete.widget.dart'; // Correct this import
-import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
+import 'package:quip/widget/bottom_navigation_bar.dart';
+import 'package:quip/pages/quipp_inbox.page.dart';
+import 'package:quip/pages/user_profile.page.dart';
+import 'package:quip/pages/quipp_now.page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:quip/widget/profile_incomplete.widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 
 class ConnectionsPage extends StatefulWidget {
   final User user;
@@ -18,20 +19,21 @@ class ConnectionsPage extends StatefulWidget {
 
 class _ConnectionsPageState extends State<ConnectionsPage> {
   int _selectedIndex = 0;
-  bool _isProfileIncomplete = false; // Add this variable
-  bool _isLoading = true; // Add this variable
+  bool _isProfileIncomplete = false;
+  bool _isLoading = true;
+  List<String> _contacts = [];
 
   final List<Widget> _pages = [];
 
   @override
   void initState() {
     super.initState();
-    _checkProfileCompletion(); // Add this line
+    _checkProfileCompletion();
   }
 
   Future<void> _checkProfileCompletion() async {
     setState(() {
-      _isLoading = true; // Show loading indicator while checking profile
+      _isLoading = true;
     });
     DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
     if (userDoc.exists) {
@@ -50,20 +52,38 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
         _isProfileIncomplete = isIncomplete;
       });
     }
+    await _fetchContacts(); // Fetch contacts after checking profile completion
     setState(() {
       _pages.clear();
       _pages.addAll([
-        ConnectionsPageContent(user: widget.user, isProfileIncomplete: _isProfileIncomplete), // Pass the variable
+        ConnectionsPageContent(
+          user: widget.user,
+          isProfileIncomplete: _isProfileIncomplete,
+          contacts: _contacts,
+        ),
         QuippInboxPage(user: widget.user),
         UserProfilePage(user: widget.user),
       ]);
-      _isLoading = false; // Update loading state
+      _isLoading = false;
     });
+  }
+
+  Future<void> _fetchContacts() async {
+    if (await FlutterContacts.requestPermission()) {
+      List<Contact> contacts = await FlutterContacts.getContacts(withProperties: true);
+      setState(() {
+        _contacts = contacts.map((contact) => contact.displayName).toList();
+        print('Fetched contacts: $_contacts'); // Add debug print
+      });
+    } else {
+      print('Permission denied'); // Add debug print
+    }
   }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _checkProfileCompletion(); // Re-check profile completion and fetch contacts on tab change
     });
   }
 
@@ -79,7 +99,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
               MaterialPageRoute(builder: (context) => ConnectionsPage(user: widget.user)),
             );
           },
-          user: widget.user, // Pass the user session
+          user: widget.user,
         ),
       ),
     );
@@ -88,17 +108,16 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator()); // Show loading indicator
+      return Center(child: CircularProgressIndicator());
     }
     return WillPopScope(
-      onWillPop: () async => false, // Disable back navigation
+      onWillPop: () async => false,
       child: Scaffold(
         body: _pages[_selectedIndex],
         bottomNavigationBar: CustomBottomNavigationBar(
           currentIndex: _selectedIndex,
           onTap: (index) {
             _onItemTapped(index);
-            _checkProfileCompletion(); // Re-check profile completion on tab change
           },
         ),
       ),
@@ -108,26 +127,14 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 
 class ConnectionsPageContent extends StatelessWidget {
   final User user;
-  final bool isProfileIncomplete; // Add this variable
-  final List<String> connections = [
-    'Aarav Sharma',
-    'Vivaan Patel',
-    'Aditya Singh',
-    'Vihaan Gupta',
-    'Arjun Kumar',
-    'Sai Reddy',
-    'Reyansh Verma',
-    'Ayaan Mehta',
-    'Krishna Joshi',
-    'Ishaan Nair',
-    'Shaurya Rao',
-    'Atharv Iyer',
-    'Dhruv Desai',
-    'Kabir Chatterjee',
-    'Ritvik Bhatt',
-  ];
+  final bool isProfileIncomplete;
+  final List<String> contacts;
 
-  ConnectionsPageContent({required this.user, required this.isProfileIncomplete}); // Update constructor
+  ConnectionsPageContent({
+    required this.user,
+    required this.isProfileIncomplete,
+    required this.contacts,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -143,12 +150,12 @@ class ConnectionsPageContent extends StatelessWidget {
       child: ListView(
         children: <Widget>[
           Column(
-            crossAxisAlignment: CrossAxisAlignment.start, // Align to the left
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              if (isProfileIncomplete) // Add this condition
-                ProfileIncomplete(user: user, userName: user.displayName ?? ''), // Add this line
+              if (isProfileIncomplete)
+                ProfileIncomplete(user: user, userName: user.displayName ?? ''),
               Padding(
-                padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0), // Add margin from the top
+                padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0),
                 child: Text(
                   'Connections',
                   style: TextStyle(
@@ -158,22 +165,22 @@ class ConnectionsPageContent extends StatelessWidget {
                   ),
                 ),
               ),
-              ...connections.map((user) => Material(
-                color: Colors.transparent, // Make the Material widget transparent
+              ...contacts.map((contact) => Material(
+                color: Colors.transparent,
                 child: ListTile(
                   title: Text(
-                    user,
+                    contact,
                     style: TextStyle(color: Colors.white),
                   ),
                   leading: Icon(Icons.person, color: Colors.white),
                   trailing: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black, // Set button color to black
-                      foregroundColor: Colors.white, // Set text color to white
-                      side: BorderSide(color: Colors.white, width: 2.0), // Add white outline
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      side: BorderSide(color: Colors.white, width: 2.0),
                     ),
                     onPressed: () {
-                      parentState._navigateToQuippNow(user);
+                      parentState._navigateToQuippNow(contact);
                     },
                     child: Text('Quip now'),
                   ),
