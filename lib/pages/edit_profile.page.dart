@@ -244,33 +244,39 @@ class _EditProfilePageState extends State<EditProfilePage> {
                               ],
                             ),
                             SizedBox(width: 16),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  'Name: $userName',
-                                  style: TextStyle(color: Colors.white, fontSize: 18),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Email: ${widget.email}',
-                                  style: TextStyle(color: Colors.white, fontSize: 18),
-                                ),
-                                SizedBox(height: 16),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.black,
-                                    foregroundColor: Colors.white,
-                                    side: BorderSide(color: Colors.white, width: 2.0),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    'Name: $userName',
+                                    style: TextStyle(color: Colors.white, fontSize: 18),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
-                                  onPressed: _saveProfile,
-                                  child: Text('Save Changes'),
-                                ),
-                              ],
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Email: ${widget.email}',
+                                    style: TextStyle(color: Colors.white, fontSize: 18),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                  SizedBox(height: 16),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.black,
+                                      foregroundColor: Colors.white,
+                                      side: BorderSide(color: Colors.white, width: 2.0),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30),
+                                      ),
+                                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                                    ),
+                                    onPressed: _saveProfile,
+                                    child: Text('Save Changes'),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),

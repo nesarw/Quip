@@ -120,44 +120,50 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                   : AssetImage('assets/profile_photo.jpg') as ImageProvider,
                             ),
                             SizedBox(width: 16),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  'Name: $userName', // Display the fetched user name
-                                  style: TextStyle(color: Colors.white, fontSize: 18),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  'Email: ${widget.user.email}',
-                                  style: TextStyle(color: Colors.white, fontSize: 18),
-                                ),
-                                SizedBox(height: 16),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.black, // Set button color to black
-                                    foregroundColor: Colors.white, // Set text color to white
-                                    side: BorderSide(color: Colors.white, width: 2.0), // Add white outline
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30), // Rounded edges
-                                    ),
-                                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    'Name: $userName',
+                                    style: TextStyle(color: Colors.white, fontSize: 18),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => EditProfilePage(
-                                          user: widget.user,
-                                          userName: userName,
-                                          email: widget.user.email!,
-                                        ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Email: ${widget.user.email}',
+                                    style: TextStyle(color: Colors.white, fontSize: 18),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                  SizedBox(height: 16),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.black, // Set button color to black
+                                      foregroundColor: Colors.white, // Set text color to white
+                                      side: BorderSide(color: Colors.white, width: 2.0), // Add white outline
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(30), // Rounded edges
                                       ),
-                                    );
-                                  },
-                                  child: Text('Edit Profile'),
-                                ),
-                              ],
+                                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => EditProfilePage(
+                                            user: widget.user,
+                                            userName: userName,
+                                            email: widget.user.email!,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text('Edit Profile'),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
