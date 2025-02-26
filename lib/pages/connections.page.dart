@@ -71,9 +71,27 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   Future<void> _fetchContacts() async {
     if (await FlutterContacts.requestPermission()) {
       List<Contact> contacts = await FlutterContacts.getContacts(withProperties: true);
+      QuerySnapshot userSnapshot = await FirebaseFirestore.instance.collection('users').get();
+      List<String> userPhoneNumbers = userSnapshot.docs.map((doc) {
+        // Normalize phone numbers by removing non-numeric characters
+        String phoneNumber = (doc.data() as Map<String, dynamic>)['mobileNumber'] as String? ?? '';
+        return phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
+      }).toList();
+
       setState(() {
-        _contacts = contacts.map((contact) => contact.displayName).toList();
-        print('Fetched contacts: $_contacts'); // Add debug print
+        _contacts = contacts
+            .where((contact) {
+              String contactNumber = contact.phones.isNotEmpty ? contact.phones.first.number : '';
+              contactNumber = contactNumber.replaceAll(RegExp(r'[^0-9]'), '');
+              // Add default country code if missing
+              if (!contactNumber.startsWith('91') && contactNumber.length == 10) {
+                contactNumber = '91' + contactNumber;
+              }
+              return userPhoneNumbers.contains(contactNumber);
+            })
+            .map((contact) => contact.displayName)
+            .toList();
+        print('Filtered contacts: $_contacts'); // Add debug print
       });
     } else {
       print('Permission denied'); // Add debug print
