@@ -2,13 +2,20 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart'; // Add this import
 import 'connections.page.dart'; // Update this import
+import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
 
 class QuippNowPage extends StatefulWidget {
   final String username;
   final VoidCallback onQuippNowComplete;
-  final User user; // Add this parameter
+  final User user;
+  final String receiverUserId; // Add this parameter
 
-  QuippNowPage({required this.username, required this.onQuippNowComplete, required this.user}); // Update constructor
+  QuippNowPage({
+    required this.username,
+    required this.onQuippNowComplete,
+    required this.user,
+    required this.receiverUserId, // Update constructor
+  });
 
   @override
   _QuippNowPageState createState() => _QuippNowPageState();
@@ -31,7 +38,17 @@ class _QuippNowPageState extends State<QuippNowPage> {
     });
   }
 
-  void _quipNow() {
+  void _quipNow() async {
+    // Send the current quip to Firestore
+    await FirebaseFirestore.instance.collection('quips').add({
+      'currentSentQuip': currentQuip,
+      'senderUserId': widget.user.uid,
+      'senderName': widget.user.displayName ?? 'Unknown',
+      'receiverUserId': widget.receiverUserId, // Use the passed receiver user ID
+      'receiverName': widget.username, // Assuming username is the receiver's name
+    });
+
+    // Call the completion callback
     widget.onQuippNowComplete();
   }
 

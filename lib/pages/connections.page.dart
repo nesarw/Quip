@@ -22,6 +22,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   bool _isProfileIncomplete = false;
   bool _isLoading = true;
   List<String> _contacts = [];
+  Map<String, String> _contactUserIds = {}; // Store contact user IDs here
 
   final List<Widget> _pages = [];
 
@@ -72,8 +73,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
     if (await FlutterContacts.requestPermission()) {
       List<Contact> contacts = await FlutterContacts.getContacts(withProperties: true);
       QuerySnapshot userSnapshot = await FirebaseFirestore.instance.collection('users').get();
+
       List<String> userPhoneNumbers = userSnapshot.docs.map((doc) {
-        // Normalize phone numbers by removing non-numeric characters
         String phoneNumber = (doc.data() as Map<String, dynamic>)['mobileNumber'] as String? ?? '';
         return phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
       }).toList();
@@ -83,13 +84,27 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
             .where((contact) {
               String contactNumber = contact.phones.isNotEmpty ? contact.phones.first.number : '';
               contactNumber = contactNumber.replaceAll(RegExp(r'[^0-9]'), '');
-              // Add default country code if missing
               if (!contactNumber.startsWith('91') && contactNumber.length == 10) {
                 contactNumber = '91' + contactNumber;
               }
               return userPhoneNumbers.contains(contactNumber);
             })
-            .map((contact) => contact.displayName)
+            .map((contact) {
+              String contactNumber = contact.phones.isNotEmpty ? contact.phones.first.number : '';
+              contactNumber = contactNumber.replaceAll(RegExp(r'[^0-9]'), '');
+              if (!contactNumber.startsWith('91') && contactNumber.length == 10) {
+                contactNumber = '91' + contactNumber;
+              }
+              String userId = '';
+              for (var doc in userSnapshot.docs) {
+                if ((doc.data() as Map<String, dynamic>)['mobileNumber'].replaceAll(RegExp(r'[^0-9]'), '') == contactNumber) {
+                  userId = doc.id;
+                  break;
+                }
+              }
+              _contactUserIds[contact.displayName] = userId; // Store user ID
+              return contact.displayName;
+            })
             .toList();
         print('Filtered contacts: $_contacts'); // Add debug print
       });
@@ -105,7 +120,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
     });
   }
 
-  void _navigateToQuippNow(String username) {
+  void _navigateToQuippNow(String username, String receiverUserId) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -118,6 +133,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
             );
           },
           user: widget.user,
+          receiverUserId: receiverUserId,
         ),
       ),
     );
@@ -183,27 +199,31 @@ class ConnectionsPageContent extends StatelessWidget {
                   ),
                 ),
               ),
-              ...contacts.map((contact) => Material(
-                color: Colors.transparent,
-                child: ListTile(
-                  title: Text(
-                    contact,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  leading: Icon(Icons.person, color: Colors.white),
-                  trailing: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                      side: BorderSide(color: Colors.white, width: 2.0),
+              ...contacts.map((contact) {
+                String receiverUserId = parentState._contactUserIds[contact] ?? ''; // Retrieve the user ID
+
+                return Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    title: Text(
+                      contact,
+                      style: TextStyle(color: Colors.white),
                     ),
-                    onPressed: () {
-                      parentState._navigateToQuippNow(contact);
-                    },
-                    child: Text('Quip now'),
+                    leading: Icon(Icons.person, color: Colors.white),
+                    trailing: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        side: BorderSide(color: Colors.white, width: 2.0),
+                      ),
+                      onPressed: () {
+                        parentState._navigateToQuippNow(contact, receiverUserId);
+                      },
+                      child: Text('Quip now'),
+                    ),
                   ),
-                ),
-              )),
+                );
+              }),
             ],
           ),
         ],
