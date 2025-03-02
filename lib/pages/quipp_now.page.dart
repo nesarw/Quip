@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart'; // Add this import
 import 'connections.page.dart'; // Update this import
 import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
+import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
 
 class QuippNowPage extends StatefulWidget {
   final String username;
@@ -77,6 +78,7 @@ class _QuippNowPageState extends State<QuippNowPage> {
       'senderName': widget.user.displayName ?? 'Unknown',
       'receiverUserId': widget.receiverUserId, // Use the passed receiver user ID
       'receiverName': receiverUsername, // Use the fetched receiver's username
+      'timestamp': FieldValue.serverTimestamp(), // Add server timestamp
     });
 
     // Call the completion callback
