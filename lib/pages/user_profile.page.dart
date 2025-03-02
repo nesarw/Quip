@@ -20,6 +20,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   String userName = 'John Doe'; // Default value
   String? photoURL; // Add this variable
   late Future<void> _userDataFuture; // Add this variable
+  int userLikes = 0; // Add this variable
 
   final List<String> topQuips = [
     'Top Quip 1: This is the first top quip.',
@@ -30,6 +31,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   void initState() {
     super.initState();
     _userDataFuture = _fetchUserData(); // Initialize the future
+    _fetchUserLikes(); // Fetch user likes
   }
 
   Future<void> _fetchUserData() async {
@@ -39,6 +41,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
         setState(() {
           userName = userDoc['name'];
           photoURL = userDoc['photoURL'];
+          Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+          userLikes = userData != null && userData.containsKey('likes') ? userData['likes'] : 0; // Fetch likes
         });
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -49,6 +53,26 @@ class _UserProfilePageState extends State<UserProfilePage> {
       }
     } catch (e) {
       print("Error fetching user data: $e");
+    }
+  }
+
+  Future<void> _fetchUserLikes() async {
+    try {
+      // Fetch the current user's ID
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+      // Retrieve the user document from Firestore
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserId).get();
+
+      // Safely access the user data
+      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+
+      // Update the state with the likes count
+      setState(() {
+        userLikes = userData != null && userData.containsKey('likes') ? userData['likes'] : 0;
+      });
+    } catch (e) {
+      print('Error fetching user likes: $e');
     }
   }
 
@@ -208,7 +232,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                   ),
                                   SizedBox(height: 8),
                                   Text(
-                                    '75',
+                                    '$userLikes',
                                     style: TextStyle(color: Colors.white, fontSize: 20),
                                   ),
                                 ],

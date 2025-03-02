@@ -20,12 +20,14 @@ class QuipDisplayPage extends StatefulWidget {
 
 class _QuipDisplayPageState extends State<QuipDisplayPage> {
   int revealsLeft = 5;
+  int userLikes = 0;
 
   @override
   void initState() {
     super.initState();
     _loadRevealsLeft();
     _resetRevealsAtMidnight();
+    _fetchUserLikes();
   }
 
   Future<void> _loadRevealsLeft() async {
@@ -58,6 +60,19 @@ class _QuipDisplayPageState extends State<QuipDisplayPage> {
       prefs.setInt('revealsLeft', revealsLeft);
       _resetRevealsAtMidnight(); // Schedule the next reset
     });
+  }
+
+  Future<void> _fetchUserLikes() async {
+    try {
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserId).get();
+      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+      setState(() {
+        userLikes = userData != null && userData.containsKey('likes') ? userData['likes'] : 0;
+      });
+    } catch (e) {
+      print('Error fetching user likes: $e');
+    }
   }
 
   Future<void> _incrementLikes() async {
@@ -217,6 +232,10 @@ class _QuipDisplayPageState extends State<QuipDisplayPage> {
                           ],
                         ),
                       ),
+                    ),
+                    Text(
+                      'Likes: $userLikes',
+                      style: TextStyle(color: Colors.white),
                     ),
                   ],
                 ),
