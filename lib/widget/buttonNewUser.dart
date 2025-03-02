@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ButtonNewUser extends StatelessWidget {
   final VoidCallback onPressed;
 
-  ButtonNewUser({required this.onPressed});
+  const ButtonNewUser({Key? key, required this.onPressed}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class VerticalText extends StatefulWidget {
+  const VerticalText({Key? key}) : super(key: key);
+
   @override
   _VerticalTextState createState() => _VerticalTextState();
 }

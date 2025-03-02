@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class QuippInboxPage extends StatefulWidget {
   final User user;
 
-  QuippInboxPage({required this.user});
+  const QuippInboxPage({Key? key, required this.user}) : super(key: key);
 
   @override
   _QuippInboxPageState createState() => _QuippInboxPageState();

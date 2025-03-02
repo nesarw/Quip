@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class IdentityDisplay extends StatelessWidget {
   final String username;
 
-  IdentityDisplay({required this.username});
+  const IdentityDisplay({Key? key, required this.username}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

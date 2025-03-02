@@ -9,7 +9,7 @@ import 'dart:io'; // Add this import
 class UserProfilePage extends StatefulWidget {
   final User user;
 
-  UserProfilePage({required this.user});
+  const UserProfilePage({Key? key, required this.user}) : super(key: key);
 
   @override
   _UserProfilePageState createState() => _UserProfilePageState();

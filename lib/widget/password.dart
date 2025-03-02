@@ -4,7 +4,7 @@ class PasswordInput extends StatefulWidget {
   final TextEditingController controller;
   final bool obscureText; // Add this parameter
 
-  PasswordInput({required this.controller, this.obscureText = true}); // Update constructor
+  const PasswordInput({Key? key, required this.controller, this.obscureText = true}) : super(key: key); // Update constructor
 
   @override
   _PasswordInputState createState() => _PasswordInputState();
@@ -15,7 +15,7 @@ class _PasswordInputState extends State<PasswordInput> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 20, left: 50, right: 50),
-      child: Container(
+      child: SizedBox(
         height: 60,
         width: MediaQuery.of(context).size.width,
         child: TextField(

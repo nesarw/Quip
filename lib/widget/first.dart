@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:quip/pages/newuser.page.dart';
 
 class FirstTime extends StatefulWidget {
+  const FirstTime({Key? key}) : super(key: key);
+
   @override
   _FirstTimeState createState() => _FirstTimeState();
 }

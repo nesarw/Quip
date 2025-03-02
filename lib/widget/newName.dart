@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class NewNome extends StatefulWidget {
   final TextEditingController controller;
 
-  NewNome({required this.controller});
+  const NewNome({Key? key, required this.controller}) : super(key: key);
 
   @override
   _NewNomeState createState() => _NewNomeState();
@@ -14,7 +14,7 @@ class _NewNomeState extends State<NewNome> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 50, left: 50, right: 50),
-      child: Container(
+      child: SizedBox(
         height: 60,
         width: MediaQuery.of(context).size.width,
         child: TextField(

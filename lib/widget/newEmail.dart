@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class NewEmail extends StatefulWidget {
   final TextEditingController controller;
 
-  NewEmail({required this.controller});
+  const NewEmail({Key? key, required this.controller}) : super(key: key);
 
   @override
   _NewEmailState createState() => _NewEmailState();
@@ -14,7 +14,7 @@ class _NewEmailState extends State<NewEmail> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 20, left: 50, right: 50),
-      child: Container(
+      child: SizedBox(
         height: 60,
         width: MediaQuery.of(context).size.width,
         child: TextField(

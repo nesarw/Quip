@@ -12,12 +12,12 @@ class QuippNowPage extends StatefulWidget {
   final User user;
   final String receiverUserId; // Add this parameter
 
-  QuippNowPage({
+  const QuippNowPage({Key? key, 
     required this.username,
     required this.onQuippNowComplete,
     required this.user,
     required this.receiverUserId, // Update constructor
-  });
+  }) : super(key: key);
 
   @override
   _QuippNowPageState createState() => _QuippNowPageState();

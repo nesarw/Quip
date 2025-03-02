@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class InputEmail extends StatefulWidget {
   final TextEditingController controller;
 
-  InputEmail({required this.controller});
+  const InputEmail({Key? key, required this.controller}) : super(key: key);
 
   @override
   _InputEmailState createState() => _InputEmailState();
@@ -14,7 +14,7 @@ class _InputEmailState extends State<InputEmail> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 50, left: 50, right: 50),
-      child: Container(
+      child: SizedBox(
         height: 60,
         width: MediaQuery.of(context).size.width,
         child: TextField(

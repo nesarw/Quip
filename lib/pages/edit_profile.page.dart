@@ -9,11 +9,11 @@ class EditProfilePage extends StatefulWidget {
   final String userName; // Add this parameter
   final String email; // Add this parameter
 
-  EditProfilePage({
+  const EditProfilePage({Key? key, 
     required this.user,
     required this.userName, // Add this parameter
     required this.email, // Add this parameter
-  });
+  }) : super(key: key);
 
   @override
   _EditProfilePageState createState() => _EditProfilePageState();
@@ -72,22 +72,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
               surface: Colors.black87,
               onSurface: Colors.white,
             ),
-            dialogBackgroundColor: Colors.black,
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white, // Text color
                 side: BorderSide(color: Colors.white), // Border color
               ),
-            ),
+            ), dialogTheme: DialogThemeData(backgroundColor: Colors.black),
           ),
           child: child!,
         );
       },
     );
-    if (picked != null && picked != selectedDate)
+    if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
       });
+    }
   }
 
   Future<void> _pickImage(ImageSource source) async {

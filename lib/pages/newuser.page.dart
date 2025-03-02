@@ -11,6 +11,8 @@ import 'package:firebase_auth/firebase_auth.dart'; // Import FirebaseAuth
 import 'package:quip/pages/login.page.dart'; // Import the login page
 
 class NewUser extends StatefulWidget {
+  const NewUser({Key? key}) : super(key: key);
+
   @override
   _NewUserState createState() => _NewUserState();
 }

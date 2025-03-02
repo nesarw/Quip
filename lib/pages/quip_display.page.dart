@@ -7,10 +7,10 @@ class QuipDisplayPage extends StatefulWidget {
   final String quip;
   final String username;
 
-  QuipDisplayPage({
+  const QuipDisplayPage({Key? key, 
     required this.quip,
     required this.username,
-  });
+  }) : super(key: key);
 
   @override
   _QuipDisplayPageState createState() => _QuipDisplayPageState();

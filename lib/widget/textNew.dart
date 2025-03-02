@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class TextNew extends StatefulWidget {
+  const TextNew({Key? key}) : super(key: key);
+
   @override
   _TextNewState createState() => _TextNewState();
 }
@@ -10,7 +12,7 @@ class _TextNewState extends State<TextNew> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 30.0, left: 10.0),
-      child: Container(
+      child: SizedBox(
         //color: Colors.green,
         height: 200,
         width: 250,

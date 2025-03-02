@@ -12,6 +12,8 @@ import 'package:quip/widget/verticalText.dart';
 import 'package:quip/pages/connections.page.dart';
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key: key);
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }

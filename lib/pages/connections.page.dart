@@ -12,7 +12,7 @@ import 'package:quip/pages/quip_display.page.dart';
 class ConnectionsPage extends StatefulWidget {
   final User user;
 
-  ConnectionsPage({required this.user});
+  const ConnectionsPage({Key? key, required this.user}) : super(key: key);
 
   @override
   _ConnectionsPageState createState() => _ConnectionsPageState();
@@ -23,7 +23,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   bool _isProfileIncomplete = false;
   bool _isLoading = true;
   List<String> _contacts = [];
-  Map<String, String> _contactUserIds = {}; // Store contact user IDs here
+  final Map<String, String> _contactUserIds = {}; // Store contact user IDs here
 
   final List<Widget> _pages = [];
 
@@ -86,7 +86,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
               String contactNumber = contact.phones.isNotEmpty ? contact.phones.first.number : '';
               contactNumber = contactNumber.replaceAll(RegExp(r'[^0-9]'), '');
               if (!contactNumber.startsWith('91') && contactNumber.length == 10) {
-                contactNumber = '91' + contactNumber;
+                contactNumber = '91$contactNumber';
               }
               return userPhoneNumbers.contains(contactNumber);
             })
@@ -94,7 +94,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
               String contactNumber = contact.phones.isNotEmpty ? contact.phones.first.number : '';
               contactNumber = contactNumber.replaceAll(RegExp(r'[^0-9]'), '');
               if (!contactNumber.startsWith('91') && contactNumber.length == 10) {
-                contactNumber = '91' + contactNumber;
+                contactNumber = '91$contactNumber';
               }
               String userId = '';
               for (var doc in userSnapshot.docs) {
@@ -177,11 +177,11 @@ class ConnectionsPageContent extends StatelessWidget {
   final bool isProfileIncomplete;
   final List<String> contacts;
 
-  ConnectionsPageContent({
+  const ConnectionsPageContent({Key? key, 
     required this.user,
     required this.isProfileIncomplete,
     required this.contacts,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
