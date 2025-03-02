@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quip/widget/profile_incomplete.widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:quip/pages/quip_display.page.dart';
 
 class ConnectionsPage extends StatefulWidget {
   final User user;
@@ -134,6 +135,18 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
           },
           user: widget.user,
           receiverUserId: receiverUserId,
+        ),
+      ),
+    );
+  }
+
+  void _navigateToQuipDisplay(String quip, String username) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuipDisplayPage(
+          quip: quip,
+          username: username,
         ),
       ),
     );

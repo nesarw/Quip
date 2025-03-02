@@ -273,7 +273,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                       padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                                     ),
                                     onPressed: _saveProfile,
-                                    child: Text('Save Changes'),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.save, color: Colors.white),
+                                        SizedBox(width: 5),
+                                        Text('Save Changes'),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),

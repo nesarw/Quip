@@ -160,7 +160,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                         ),
                                       );
                                     },
-                                    child: Text('Edit Profile'),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.person, color: Colors.white),
+                                        SizedBox(width: 5),
+                                        Text('Edit Profile'),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),

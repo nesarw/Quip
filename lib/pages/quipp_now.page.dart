@@ -92,16 +92,28 @@ class _QuippNowPageState extends State<QuippNowPage> {
                       side: BorderSide(color: Colors.white, width: 2.0), // Add white outline
                     ),
                     onPressed: _shuffleQuip,
-                    child: Text('Shuffle'),
+                    child: Row(
+                      children: [
+                        Icon(Icons.shuffle, color: Colors.white), // Add shuffle icon
+                        SizedBox(width: 5),
+                        Text('Shuffle'),
+                      ],
+                    ),
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black, // Set button color to black
-                      foregroundColor: Colors.white, // Set text color to white
+                      backgroundColor: Colors.white, // Set button color to black
+                      foregroundColor: Colors.black, // Set text color to white
                       side: BorderSide(color: Colors.white, width: 2.0), // Add white outline
                     ),
                     onPressed: _quipNow,
-                    child: Text('Quipp Now'),
+                    child: Row(
+                      children: [
+                        Icon(Icons.send, color: Colors.black), // Add quipp now icon
+                        SizedBox(width: 5),
+                        Text('Quipp Now'),
+                      ],
+                    ),
                   ),
                 ],
               ),

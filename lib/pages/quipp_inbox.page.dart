@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Add this import
 import 'package:quip/widget/bottom_navigation_bar.dart'; // Add this import
+import 'package:quip/pages/quip_display.page.dart';
 
 class QuippInboxPage extends StatefulWidget {
   final User user;
@@ -61,6 +62,17 @@ class _QuippInboxPageState extends State<QuippInboxPage> {
                         style: TextStyle(color: Colors.white),
                       ),
                       leading: Icon(Icons.message, color: Colors.white),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => QuipDisplayPage(
+                              quip: quip,
+                              username: widget.user.displayName ?? 'Unknown',
+                            ),
+                          ),
+                        );
+                      },
                     )),
               ],
             ),
