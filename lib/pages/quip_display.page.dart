@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import '../widget/identity_display.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class QuipDisplayPage extends StatefulWidget {
   final String quip;
@@ -56,6 +58,50 @@ class _QuipDisplayPageState extends State<QuipDisplayPage> {
       prefs.setInt('revealsLeft', revealsLeft);
       _resetRevealsAtMidnight(); // Schedule the next reset
     });
+  }
+
+  Future<void> _incrementLikes() async {
+    try {
+      // Step 1: Fetch the quip document from the "quips" collection
+      QuerySnapshot quipSnapshot = await FirebaseFirestore.instance
+          .collection('quips')
+          .where('currentSentQuip', isEqualTo: widget.quip)
+          .limit(1)
+          .get();
+
+      if (quipSnapshot.docs.isNotEmpty) {
+        DocumentSnapshot quipDoc = quipSnapshot.docs.first;
+        String senderUserId = quipDoc['senderUserId'];
+
+        // Step 2: Check if the logged-in user has already liked this quip
+        Map<String, dynamic>? quipData = quipDoc.data() as Map<String, dynamic>?;
+        List<dynamic> likedBy = quipData != null && quipData.containsKey('likedBy') ? quipData['likedBy'] : [];
+        String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+        if (!likedBy.contains(currentUserId)) {
+          // Step 3: Use the senderUserId to locate the user in the "users" collection
+          DocumentReference userDocRef = FirebaseFirestore.instance.collection('users').doc(senderUserId);
+
+          // Step 4: Check if the "likes" field exists; if not, initialize it
+          DocumentSnapshot userDoc = await userDocRef.get();
+          Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+          int currentLikes = userData != null && userData.containsKey('likes')
+              ? userData['likes']
+              : 0;
+
+          // Step 5: Increment the "likes" counter by 1
+          await userDocRef.update({'likes': currentLikes + 1});
+
+          // Step 6: Add the current user's ID to the likedBy list
+          likedBy.add(currentUserId);
+          await quipDoc.reference.update({'likedBy': likedBy});
+        } else {
+          print('User has already liked this quip.');
+        }
+      }
+    } catch (e) {
+      print('Error incrementing likes: $e');
+    }
   }
 
   @override
@@ -159,7 +205,9 @@ class _QuipDisplayPageState extends State<QuipDisplayPage> {
                           foregroundColor: Colors.black, // Set text color to white
                           side: BorderSide(color: Colors.white, width: 4.0), // Add white outline
                         ),
-                        onPressed: () {},
+                        onPressed: () {
+                          _incrementLikes();
+                        },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center, // Center contents
                           children: [
