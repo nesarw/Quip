@@ -176,37 +176,43 @@ class _UserProfilePageState extends State<UserProfilePage> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(30.0),
+                        padding: const EdgeInsets.all(20.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Text(
-                                  'Connections:',
-                                  style: TextStyle(color: Colors.white, fontSize: 18),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  '150',
-                                  style: TextStyle(color: Colors.white, fontSize: 18),
-                                ),
-                              ],
+                            Padding(
+                              padding: const EdgeInsets.only(left: 54.0), // Add left padding
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  Text(
+                                    "Quip's:",
+                                    style: TextStyle(color: Colors.white, fontSize: 20),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    '150',
+                                    style: TextStyle(color: Colors.white, fontSize: 20),
+                                  ),
+                                ],
+                              ),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Text(
-                                  'Total Quipps:',
-                                  style: TextStyle(color: Colors.white, fontSize: 18),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  '75',
-                                  style: TextStyle(color: Colors.white, fontSize: 18,),
-                                ),
-                              ],
+                            Padding(
+                              padding: const EdgeInsets.only(right: 54.0), // Add right padding
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: <Widget>[
+                                  Text(
+                                    "Like's:",
+                                    style: TextStyle(color: Colors.white, fontSize: 20),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    '75',
+                                    style: TextStyle(color: Colors.white, fontSize: 20),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
