@@ -1,2 +1,6 @@
-*.c linguist-vendored=false
-*.cpp linguist-vendored=false
+# Treat Dart files as the main language
+*.dart linguist-language=Dart
+
+# Mark C and C++ files as vendored so they don't count in language stats
+*.c linguist-vendored
+*.cpp linguist-vendored
