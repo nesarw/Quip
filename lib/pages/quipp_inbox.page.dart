@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Add this import
 import 'package:quip/widget/bottom_navigation_bar.dart'; // Add this import
 import 'package:quip/pages/quip_display.page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class QuippInboxPage extends StatefulWidget {
   final User user;
@@ -13,11 +14,37 @@ class QuippInboxPage extends StatefulWidget {
 }
 
 class _QuippInboxPageState extends State<QuippInboxPage> {
-  final List<String> quips = [
-    'Someone Sent you a Quip',
-    'Someone Sent you a Quip','Someone Sent you a Quip','Someone Sent you a Quip','Someone Sent you a Quip','Someone Sent you a Quip','Someone Sent you a Quip','Someone Sent you a Quip','Someone Sent you a Quip','Someone Sent you a Quip','Someone Sent you a Quip',
-    // Add more quips as needed
-  ];
+  List<Map<String, dynamic>> quips = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchQuips();
+  }
+
+  Future<void> _fetchQuips() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('quips')
+          .where('receiverUserId', isEqualTo: widget.user.uid)
+          .get();
+
+      setState(() {
+        quips = querySnapshot.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>?;
+          if (data != null) {
+            return data;
+          } else {
+            return <String, dynamic>{};
+          }
+        }).toList();
+        print('Fetched quips:');
+        print(quips);
+      });
+    } catch (e) {
+      print("Error fetching quips: $e");
+    }
+  }
 
   int _selectedIndex = 1; // Set the selected index to 1 for the inbox page
 
@@ -56,9 +83,9 @@ class _QuippInboxPageState extends State<QuippInboxPage> {
                     ),
                   ),
                 ),
-                ...quips.map((quip) => ListTile(
+                ...quips.map((quipData) => ListTile(
                       title: Text(
-                        quip,
+                        'Someone Sent you a Quip',
                         style: TextStyle(color: Colors.white),
                       ),
                       leading: Icon(Icons.message, color: Colors.white),
@@ -67,8 +94,8 @@ class _QuippInboxPageState extends State<QuippInboxPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => QuipDisplayPage(
-                              quip: quip,
-                              username: widget.user.displayName ?? 'Unknown',
+                              quip: quipData['currentSentQuip'] ?? 'No Quip',
+                              username: quipData['senderName'] ?? 'Unknown',
                             ),
                           ),
                         );
