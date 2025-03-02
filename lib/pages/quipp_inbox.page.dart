@@ -67,44 +67,62 @@ class _QuippInboxPageState extends State<QuippInboxPage> {
               end: Alignment.bottomCenter,
               colors: [Colors.black, Colors.black87]),
         ),
-        child: ListView(
-          children: <Widget>[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start, // Align to the left
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0), // Add margin from the top
-                  child: Text(
-                    'Inbox',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 34,
-                      fontWeight: FontWeight.w300,
-                    ),
-                  ),
-                ),
-                ...quips.map((quipData) => ListTile(
-                      title: Text(
-                        'Someone Sent you a Quip',
-                        style: TextStyle(color: Colors.white),
+        child: quips.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.sentiment_dissatisfied_sharp, color: Colors.grey, size: 50.0), // Sad face icon
+                    SizedBox(height: 10.0),
+                    Text(
+                      'No quips',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w200,
                       ),
-                      leading: Icon(Icons.message, color: Colors.white),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => QuipDisplayPage(
-                              quip: quipData['currentSentQuip'] ?? 'No Quip',
-                              username: quipData['senderName'] ?? 'Unknown',
-                            ),
+                    ),
+                  ],
+                ),
+              )
+            : ListView(
+                children: <Widget>[
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start, // Align to the left
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0), // Add margin from the top
+                        child: Text(
+                          'Inbox',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 34,
+                            fontWeight: FontWeight.w300,
                           ),
-                        );
-                      },
-                    )),
-              ],
-            ),
-          ],
-        ),
+                        ),
+                      ),
+                      ...quips.map((quipData) => ListTile(
+                            title: Text(
+                              'Someone Sent you a Quip',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            leading: Icon(Icons.message, color: Colors.white),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => QuipDisplayPage(
+                                    quip: quipData['currentSentQuip'] ?? 'No Quip',
+                                    username: quipData['senderName'] ?? 'Unknown',
+                                  ),
+                                ),
+                              );
+                            },
+                          )),
+                    ],
+                  ),
+                ],
+              ),
       ),
     );
   }

@@ -31,6 +31,37 @@ class _QuippNowPageState extends State<QuippNowPage> {
   ];
 
   String currentQuip = 'Quip 1: This is a random quip.';
+  String receiverUsername = 'Loading...'; // Add a variable to store the receiver's username
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchReceiverUsername(); // Fetch the receiver's username when the page is initialized
+  }
+
+  Future<void> _fetchReceiverUsername() async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.receiverUserId)
+          .get();
+
+      if (userDoc.exists) {
+        setState(() {
+          receiverUsername = userDoc['name'] ?? 'Unknown';
+        });
+      } else {
+        setState(() {
+          receiverUsername = 'User not found';
+        });
+      }
+    } catch (e) {
+      print('Error fetching username: $e'); // Log the error
+      setState(() {
+        receiverUsername = 'Error fetching username';
+      });
+    }
+  }
 
   void _shuffleQuip() {
     setState(() {
@@ -45,7 +76,7 @@ class _QuippNowPageState extends State<QuippNowPage> {
       'senderUserId': widget.user.uid,
       'senderName': widget.user.displayName ?? 'Unknown',
       'receiverUserId': widget.receiverUserId, // Use the passed receiver user ID
-      'receiverName': widget.username, // Assuming username is the receiver's name
+      'receiverName': receiverUsername, // Use the fetched receiver's username
     });
 
     // Call the completion callback
@@ -68,7 +99,7 @@ class _QuippNowPageState extends State<QuippNowPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                "${widget.username}",
+                receiverUsername, // Display the fetched receiver's username
                 style: TextStyle(color: Colors.white, fontSize: 24),
                 textAlign: TextAlign.center,
               ),
