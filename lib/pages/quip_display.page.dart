@@ -233,10 +233,10 @@ class _QuipDisplayPageState extends State<QuipDisplayPage> {
                         ),
                       ),
                     ),
-                    Text(
-                      'Likes: $userLikes',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    // Text(
+                    //   'Likes: $userLikes',
+                    //   style: TextStyle(color: Colors.white),
+                    // ),
                   ],
                 ),
               ],
