@@ -21,6 +21,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
   String? photoURL; // Add this variable
   late Future<void> _userDataFuture; // Add this variable
   int userLikes = 0; // Add this variable
+  int totalQuipsReceived = 0; // Add a variable to store the total number of quips received
+  List<String> recentQuips = []; // Add a variable to store the recent quips
 
   final List<String> topQuips = [
     'Top Quip 1: This is the first top quip.',
@@ -32,6 +34,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     super.initState();
     _userDataFuture = _fetchUserData(); // Initialize the future
     _fetchUserLikes(); // Fetch user likes
+    _fetchTotalQuipsReceived(); // Fetch total quips received
+    _fetchRecentQuips(); // Fetch recent quips
   }
 
   Future<void> _fetchUserData() async {
@@ -73,6 +77,54 @@ class _UserProfilePageState extends State<UserProfilePage> {
       });
     } catch (e) {
       print('Error fetching user likes: $e');
+    }
+  }
+
+  Future<void> _fetchTotalQuipsReceived() async {
+    try {
+      // Fetch the current user's ID
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+      // Query the 'quips' collection to count the number of quips received by the user
+      QuerySnapshot quipSnapshot = await FirebaseFirestore.instance
+          .collection('quips')
+          .where('receiverUserId', isEqualTo: currentUserId)
+          .get();
+
+      // Update the state with the total number of quips received
+      setState(() {
+        totalQuipsReceived = quipSnapshot.docs.length;
+      });
+    } catch (e) {
+      print('Error fetching total quips received: $e');
+    }
+  }
+
+  Future<void> _fetchRecentQuips() async {
+    try {
+      // Fetch the current user's ID
+      String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+      // Query the 'quips' collection to get all quips received by the user
+      QuerySnapshot quipSnapshot = await FirebaseFirestore.instance
+          .collection('quips')
+          .where('receiverUserId', isEqualTo: currentUserId)
+          .get();
+
+      // Sort the quips by timestamp in descending order and select the top two
+      List<QueryDocumentSnapshot> sortedQuips = quipSnapshot.docs;
+      sortedQuips.sort((a, b) {
+        Timestamp timestampA = a['timestamp'];
+        Timestamp timestampB = b['timestamp'];
+        return timestampB.compareTo(timestampA);
+      });
+
+      // Update the state with the recent quips
+      setState(() {
+        recentQuips = sortedQuips.take(2).map((doc) => doc['currentSentQuip'] as String).toList();
+      });
+    } catch (e) {
+      print('Error fetching recent quips: $e');
     }
   }
 
@@ -215,7 +267,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                                   ),
                                   SizedBox(height: 8),
                                   Text(
-                                    '150',
+                                    '$totalQuipsReceived', // Display total quips received
                                     style: TextStyle(color: Colors.white, fontSize: 20),
                                   ),
                                 ],
@@ -256,7 +308,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
-                          children: topQuips.map((quip) => ListTile(
+                          children: recentQuips.map((quip) => ListTile(
                             title: Text(
                               quip,
                               style: TextStyle(color: Colors.white),
