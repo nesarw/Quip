@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart'; // Add this import
 import 'package:quip/widget/bottom_navigation_bar.dart'; // Add this import
 import 'package:quip/pages/quip_display.page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:quip/widget/heart_fab.dart';
 
 class QuippInboxPage extends StatefulWidget {
   final User user;
@@ -123,6 +124,9 @@ class _QuippInboxPageState extends State<QuippInboxPage> {
                   ),
                 ],
               ),
+      ),
+      floatingActionButton: HeartFAB(
+        user: widget.user,
       ),
     );
   }

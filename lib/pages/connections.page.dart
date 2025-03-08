@@ -8,6 +8,7 @@ import 'package:quip/widget/profile_incomplete.widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:quip/pages/quip_display.page.dart';
+import 'package:quip/widget/heart_fab.dart';
 
 class ConnectionsPage extends StatefulWidget {
   final User user;
@@ -166,6 +167,9 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
           onTap: (index) {
             _onItemTapped(index);
           },
+        ),
+        floatingActionButton: HeartFAB(
+          user: widget.user,
         ),
       ),
     );
