@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'package:firebase_auth/firebase_auth.dart'; // Add this import
-import 'connections.page.dart'; // Update this import
-import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
-import 'package:cloud_firestore/cloud_firestore.dart'; // Add this import
+import 'package:firebase_auth/firebase_auth.dart';
+import 'connections.page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quip/services/message_generator.service.dart';
 
 class QuippNowPage extends StatefulWidget {
   final String username;
   final VoidCallback onQuippNowComplete;
   final User user;
-  final String receiverUserId; // Add this parameter
+  final String receiverUserId;
 
   const QuippNowPage({Key? key, 
     required this.username,
     required this.onQuippNowComplete,
     required this.user,
-    required this.receiverUserId, // Update constructor
+    required this.receiverUserId,
   }) : super(key: key);
 
   @override
@@ -24,88 +24,39 @@ class QuippNowPage extends StatefulWidget {
 }
 
 class _QuippNowPageState extends State<QuippNowPage> {
-  final List<String> quips = [
-    'Quip 1: This is a random quip.',
-    'Quip 2: Another random quip.',
-    'Quip 3: Yet another random quip.',
-    'Quip 4: More random quips.',
-    'Quip 5: Random quip galore.',
-  ];
-
-  String currentQuip = 'Quip 1: This is a random quip.';
-  String receiverUsername = 'Loading...'; // Add a variable to store the receiver's username
+  String currentQuip = 'Loading...';
+  String receiverUsername = 'Loading...';
   int shufflesLeft = 5;
+  bool isLoading = false;
+  final MessageGeneratorService _messageGenerator = MessageGeneratorService();
 
   @override
   void initState() {
     super.initState();
-    _fetchReceiverUsername(); // Fetch the receiver's username when the page is initialized
+    _fetchReceiverUsername();
     _loadShufflesLeft();
     _resetShufflesAtMidnight();
+    _generateNewQuip(); // Generate initial quip
   }
 
-  Future<void> _fetchReceiverUsername() async {
-    try {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.receiverUserId)
-          .get();
+  Future<void> _generateNewQuip() async {
+    if (shufflesLeft > 0) {
+      setState(() {
+        isLoading = true;
+      });
 
-      if (userDoc.exists) {
+      try {
+        final generatedMessage = await _messageGenerator.generateMessage();
         setState(() {
-          receiverUsername = userDoc['name'] ?? 'Unknown';
+          currentQuip = generatedMessage;
+          isLoading = false;
         });
-      } else {
+      } catch (e) {
         setState(() {
-          receiverUsername = 'User not found';
+          currentQuip = 'Failed to generate message. Try again!';
+          isLoading = false;
         });
       }
-    } catch (e) {
-      print('Error fetching username: $e'); // Log the error
-      setState(() {
-        receiverUsername = 'Error fetching username';
-      });
-    }
-  }
-
-  Future<void> _loadShufflesLeft() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      shufflesLeft = prefs.getInt('shufflesLeft') ?? 5;
-    });
-  }
-
-  Future<void> _decrementShuffles() async {
-    if (shufflesLeft > 0) {
-      setState(() {
-        shufflesLeft--;
-      });
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setInt('shufflesLeft', shufflesLeft);
-    }
-  }
-
-  Future<void> _resetShufflesAtMidnight() async {
-    DateTime now = DateTime.now();
-    DateTime nextMidnight = DateTime(now.year, now.month, now.day + 1);
-    Duration timeUntilMidnight = nextMidnight.difference(now);
-
-    Future.delayed(timeUntilMidnight, () async {
-      setState(() {
-        shufflesLeft = 5;
-      });
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setInt('shufflesLeft', shufflesLeft);
-      _resetShufflesAtMidnight(); // Schedule the next reset
-    });
-  }
-
-  void _shuffleQuip() {
-    if (shufflesLeft > 0) {
-      _decrementShuffles();
-      setState(() {
-        currentQuip = quips[Random().nextInt(quips.length)];
-      });
     } else {
       showDialog(
         context: context,
@@ -140,15 +91,72 @@ class _QuippNowPageState extends State<QuippNowPage> {
     }
   }
 
+  Future<void> _fetchReceiverUsername() async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.receiverUserId)
+          .get();
+
+      if (userDoc.exists) {
+        setState(() {
+          receiverUsername = userDoc['name'] ?? 'Unknown';
+        });
+      } else {
+        setState(() {
+          receiverUsername = 'User not found';
+        });
+      }
+    } catch (e) {
+      print('Error fetching username: $e');
+      setState(() {
+        receiverUsername = 'Error fetching username';
+      });
+    }
+  }
+
+  Future<void> _loadShufflesLeft() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      shufflesLeft = prefs.getInt('shufflesLeft') ?? 5;
+    });
+  }
+
+  Future<void> _decrementShuffles() async {
+    if (shufflesLeft > 0) {
+      setState(() {
+        shufflesLeft--;
+      });
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('shufflesLeft', shufflesLeft);
+    }
+  }
+
+  Future<void> _resetShufflesAtMidnight() async {
+    DateTime now = DateTime.now();
+    DateTime nextMidnight = DateTime(now.year, now.month, now.day + 1);
+    Duration timeUntilMidnight = nextMidnight.difference(now);
+
+    Future.delayed(timeUntilMidnight, () async {
+      setState(() {
+        shufflesLeft = 5;
+      });
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('shufflesLeft', shufflesLeft);
+      _resetShufflesAtMidnight(); // Schedule the next reset
+    });
+  }
+
   void _quipNow() async {
     // Send the current quip to Firestore
     await FirebaseFirestore.instance.collection('quips').add({
       'currentSentQuip': currentQuip,
       'senderUserId': widget.user.uid,
       'senderName': widget.user.displayName ?? 'Unknown',
-      'receiverUserId': widget.receiverUserId, // Use the passed receiver user ID
-      'receiverName': receiverUsername, // Use the fetched receiver's username
-      'timestamp': FieldValue.serverTimestamp(), // Add server timestamp
+      'receiverUserId': widget.receiverUserId,
+      'receiverName': receiverUsername,
+      'timestamp': FieldValue.serverTimestamp(),
+      'likedBy': [], // Initialize empty likedBy array
     });
 
     // Call the completion callback
@@ -158,82 +166,101 @@ class _QuippNowPageState extends State<QuippNowPage> {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: () async => false, // Disable back navigation
+      onWillPop: () async => false,
       child: Scaffold(
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Colors.black, Colors.black87]),
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.black, Colors.black87],
+            ),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                receiverUsername, // Display the fetched receiver's username
+                receiverUsername,
                 style: TextStyle(color: Colors.white, fontSize: 24),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  currentQuip,
-                  style: TextStyle(color: Colors.white, fontSize: 24),
-                  textAlign: TextAlign.center,
+              if (isLoading)
+                CircularProgressIndicator(color: Colors.white)
+              else
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    currentQuip,
+                    style: TextStyle(color: Colors.white, fontSize: 24),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ElevatedButton(
+              SizedBox(height: 50),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 32),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 150,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                foregroundColor: Colors.white,
+                                side: BorderSide(color: Colors.white, width: 2.0),
+                                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              ),
+                              onPressed: shufflesLeft > 0 ? () async {
+                                await _generateNewQuip();
+                                await _decrementShuffles();
+                              } : null,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.shuffle, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text('Shuffle'),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            '$shufflesLeft/5 Left',
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 150,
+                      child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           foregroundColor: Colors.white,
                           side: BorderSide(color: Colors.white, width: 2.0),
-                        ),
-                        onPressed: _shuffleQuip,
-                        child: Row(
-                          children: [
-                            Icon(Icons.shuffle, color: Colors.white),
-                            SizedBox(width: 5),
-                            Text('Shuffle'),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        '$shufflesLeft/5 Left',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          side: BorderSide(color: Colors.white, width: 2.0),
+                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         ),
                         onPressed: _quipNow,
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.send, color: Colors.black),
-                            SizedBox(width: 5),
-                            Text('Quipp Now'),
+                            Icon(Icons.send, color: Colors.white),
+                            SizedBox(width: 8),
+                            Text('Send Quip'),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
