@@ -77,6 +77,14 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
       List<Contact> contacts = await FlutterContacts.getContacts(withProperties: true);
       QuerySnapshot userSnapshot = await FirebaseFirestore.instance.collection('users').get();
 
+      // Get current user's phone number
+      String currentUserPhoneNumber = '';
+      DocumentSnapshot currentUserDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
+      if (currentUserDoc.exists) {
+        currentUserPhoneNumber = (currentUserDoc.data() as Map<String, dynamic>)['mobileNumber'] as String? ?? '';
+        currentUserPhoneNumber = currentUserPhoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
+      }
+
       List<String> userPhoneNumbers = userSnapshot.docs.map((doc) {
         String phoneNumber = (doc.data() as Map<String, dynamic>)['mobileNumber'] as String? ?? '';
         return phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
@@ -90,7 +98,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
               if (!contactNumber.startsWith('91') && contactNumber.length == 10) {
                 contactNumber = '91$contactNumber';
               }
-              return userPhoneNumbers.contains(contactNumber);
+              // Exclude current user's phone number from contacts
+              return userPhoneNumbers.contains(contactNumber) && contactNumber != currentUserPhoneNumber;
             })
             .map((contact) {
               String contactNumber = contact.phones.isNotEmpty ? contact.phones.first.number : '';
