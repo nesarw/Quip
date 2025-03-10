@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:quip/widget/liked_quips_shimmer.dart';
 
 class LikedQuipsPage extends StatefulWidget {
   final User user;
@@ -13,7 +14,7 @@ class LikedQuipsPage extends StatefulWidget {
 
 class _LikedQuipsPageState extends State<LikedQuipsPage> {
   List<Map<String, dynamic>> likedQuips = [];
-  bool isLoading = true;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -22,6 +23,11 @@ class _LikedQuipsPageState extends State<LikedQuipsPage> {
   }
 
   Future<void> _fetchLikedQuips() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       // Get all quips sent by the current user
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -50,14 +56,16 @@ class _LikedQuipsPageState extends State<LikedQuipsPage> {
         return timestampB.compareTo(timestampA);
       });
 
+      if (!mounted) return;
       setState(() {
         likedQuips = tempLikedQuips;
-        isLoading = false;
+        _isLoading = false;
       });
     } catch (e) {
       print("Error fetching liked quips: $e");
+      if (!mounted) return;
       setState(() {
-        isLoading = false;
+        _isLoading = false;
       });
     }
   }
@@ -76,60 +84,60 @@ class _LikedQuipsPageState extends State<LikedQuipsPage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.black, Colors.black87],
-          ),
-        ),
-        child: isLoading
-            ? Center(child: CircularProgressIndicator())
-            : likedQuips.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.favorite_border,
-                          color: Colors.grey,
-                          size: 50.0,
-                        ),
-                        SizedBox(height: 10.0),
-                        Text(
-                          'No liked quips yet',
-                          style: TextStyle(
+      body: _isLoading
+          ? LikedQuipsShimmer()
+          : Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black, Colors.black87],
+                ),
+              ),
+              child: likedQuips.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.favorite_border,
                             color: Colors.grey,
-                            fontSize: 32,
-                            fontWeight: FontWeight.w200,
+                            size: 50.0,
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 10.0),
+                          Text(
+                            'No liked quips yet',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 32,
+                              fontWeight: FontWeight.w200,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: likedQuips.length,
+                      itemBuilder: (context, index) {
+                        final quip = likedQuips[index];
+                        return Card(
+                          margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          color: Colors.white.withOpacity(0.1),
+                          child: ListTile(
+                            title: Text(
+                              quip['currentSentQuip'] ?? 'No Quip',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              'Liked by ${quip['receiverName'] ?? 'Unknown'}',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            leading: Icon(Icons.favorite, color: Colors.red),
+                          ),
+                        );
+                      },
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: likedQuips.length,
-                    itemBuilder: (context, index) {
-                      final quip = likedQuips[index];
-                      return Card(
-                        margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        color: Colors.white.withOpacity(0.1),
-                        child: ListTile(
-                          title: Text(
-                            quip['currentSentQuip'] ?? 'No Quip',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          subtitle: Text(
-                            'Liked by ${quip['receiverName'] ?? 'Unknown'}',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                          leading: Icon(Icons.favorite, color: Colors.red),
-                        ),
-                      );
-                    },
-                  ),
-      ),
+            ),
     );
   }
 } 

@@ -83,7 +83,7 @@ class MessageGeneratorService {
     final basePrompt = """
 Generate a highly engaging $category message for a dating app with ${(intensity * 100).toInt()}% intensity.
 Rules:
-- Must be witty and creative
+- Must be creative and chessy
 - Must be flirty and intriguing
 - Must encourage a response
 - Must be a single message

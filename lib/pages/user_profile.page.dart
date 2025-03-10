@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Add this import
 import 'package:quip/widget/bottom_navigation_bar.dart'; // Add this import
 import 'package:quip/pages/edit_profile.page.dart'; // Add this import
+import 'package:quip/widget/profile_shimmer.dart';
 import 'dart:io'; // Add this import
 
 class UserProfilePage extends StatefulWidget {
@@ -19,7 +20,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
   int _selectedIndex = 2; // Set the selected index to 2 for the profile page
   String userName = 'John Doe'; // Default value
   String? photoURL; // Add this variable
-  late Future<void> _userDataFuture; // Add this variable
+  bool _isLoading = true;
   int userLikes = 0; // Add this variable
   int totalQuipsReceived = 0; // Add a variable to store the total number of quips received
   List<String> recentQuips = []; // Add a variable to store the recent quips
@@ -32,10 +33,30 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   void initState() {
     super.initState();
-    _userDataFuture = _fetchUserData(); // Initialize the future
-    _fetchUserLikes(); // Fetch user likes
-    _fetchTotalQuipsReceived(); // Fetch total quips received
-    _fetchRecentQuips(); // Fetch recent quips
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await Future.wait([
+        _fetchUserData(),
+        _fetchUserLikes(),
+        _fetchTotalQuipsReceived(),
+        _fetchRecentQuips(),
+      ]);
+    } catch (e) {
+      print("Error loading user data: $e");
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _fetchUserData() async {
@@ -142,27 +163,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder(
-        future: _userDataFuture, // Use the initialized future
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container(
-              color: Colors.black,
-              child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error loading user data',
-                style: TextStyle(color: Colors.white),
-              ),
-            );
-          } else {
-            return Container(
+      body: _isLoading
+          ? ProfileShimmer()
+          : Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -321,10 +324,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   ),
                 ],
               ),
-            );
-          }
-        },
-      ),
+            ),
     );
   }
 }

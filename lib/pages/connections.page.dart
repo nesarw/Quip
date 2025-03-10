@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:quip/pages/quip_display.page.dart';
 import 'package:quip/widget/heart_fab.dart';
+import 'package:quip/widget/connections_shimmer.dart';
 
 class ConnectionsPage extends StatefulWidget {
   final User user;
@@ -155,8 +156,19 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+    if (_isLoading && _selectedIndex == 0) {
+      return Scaffold(
+        body: ConnectionsShimmer(),
+        bottomNavigationBar: CustomBottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) {
+            _onItemTapped(index);
+          },
+        ),
+        floatingActionButton: HeartFAB(
+          user: widget.user,
+        ),
+      );
     }
     return WillPopScope(
       onWillPop: () async => false,

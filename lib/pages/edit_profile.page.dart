@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Add this import
 import 'dart:io'; // Add this import
+import 'package:quip/widget/edit_profile_shimmer.dart';
 
 class EditProfilePage extends StatefulWidget {
   final User user;
@@ -145,17 +146,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder(
-        future: _userDataFuture, // Use the initialized future
+        future: _userDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container(
-              color: Colors.black,
-              child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ),
-            );
+            return EditProfileShimmer();
           } else if (snapshot.hasError) {
             return Center(
               child: Text(
