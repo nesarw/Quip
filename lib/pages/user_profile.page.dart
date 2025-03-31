@@ -184,162 +184,174 @@ class _UserProfilePageState extends State<UserProfilePage> {
           ? ProfileShimmer()
           : Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/loginpagebg.jpg'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.black, Colors.black87]),
-              ),
-              child: ListView(
-                children: <Widget>[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start, // Align to the left
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0), // Add margin from the top
-                        child: Text(
-                          'User Profile',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 34,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: <Widget>[
-                            CircleAvatar(
-                              radius: 50,
-                              backgroundImage: photoURL != null
-                                  ? NetworkImage(photoURL!)
-                                  : AssetImage('assets/profile_photo.jpg') as ImageProvider,
-                            ),
-                            SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    'Name: $userName',
-                                    style: TextStyle(color: Colors.white, fontSize: 18),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Email: ${widget.user.email}',
-                                    style: TextStyle(color: Colors.white, fontSize: 18),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                  SizedBox(height: 16),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.black, // Set button color to black
-                                      foregroundColor: Colors.white, // Set text color to white
-                                      side: BorderSide(color: Colors.white, width: 2.0), // Add white outline
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30), // Rounded edges
-                                      ),
-                                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                                    ),
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => EditProfilePage(
-                                            user: widget.user,
-                                            userName: userName,
-                                            email: widget.user.email!,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.person, color: Colors.white),
-                                        SizedBox(width: 5),
-                                        Text('Edit Profile'),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(left: 54.0), // Add left padding
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  Text(
-                                    "Quip's:",
-                                    style: TextStyle(color: Colors.white, fontSize: 20),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    '$totalQuipsReceived', // Display total quips received
-                                    style: TextStyle(color: Colors.white, fontSize: 20),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 54.0), // Add right padding
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: <Widget>[
-                                  Text(
-                                    "Like's:",
-                                    style: TextStyle(color: Colors.white, fontSize: 20),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    '$userLikes',
-                                    style: TextStyle(color: Colors.white, fontSize: 20),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 28),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          'Top Quipps:',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: recentQuips.map((quip) => ListTile(
-                            title: Text(
-                              quip,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            leading: Icon(Icons.message, color: Colors.white),
-                          )).toList(),
-                        ),
-                      ),
+                    colors: [
+                      Colors.black.withOpacity(0.5),
+                      Colors.black.withOpacity(0.5),
                     ],
                   ),
-                ],
+                ),
+                child: ListView(
+                  children: <Widget>[
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start, // Align to the left
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0), // Add margin from the top
+                          child: Text(
+                            'User Profile',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 34,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: <Widget>[
+                              CircleAvatar(
+                                radius: 50,
+                                backgroundImage: photoURL != null
+                                    ? NetworkImage(photoURL!)
+                                    : AssetImage('assets/profile_photo.jpg') as ImageProvider,
+                              ),
+                              SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(
+                                      'Name: $userName',
+                                      style: TextStyle(color: Colors.white, fontSize: 18),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Email: ${widget.user.email}',
+                                      style: TextStyle(color: Colors.white, fontSize: 18),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                    SizedBox(height: 16),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.black, // Set button color to black
+                                        foregroundColor: Colors.white, // Set text color to white
+                                        side: BorderSide(color: Colors.white, width: 2.0), // Add white outline
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(30), // Rounded edges
+                                        ),
+                                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => EditProfilePage(
+                                              user: widget.user,
+                                              userName: userName,
+                                              email: widget.user.email!,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.person, color: Colors.white),
+                                          SizedBox(width: 5),
+                                          Text('Edit Profile'),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(left: 54.0), // Add left padding
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    Text(
+                                      "Quip's:",
+                                      style: TextStyle(color: Colors.white, fontSize: 20),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '$totalQuipsReceived', // Display total quips received
+                                      style: TextStyle(color: Colors.white, fontSize: 20),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 54.0), // Add right padding
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    Text(
+                                      "Like's:",
+                                      style: TextStyle(color: Colors.white, fontSize: 20),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      '$userLikes',
+                                      style: TextStyle(color: Colors.white, fontSize: 20),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 28),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Text(
+                            'Top Quipps:',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: recentQuips.map((quip) => ListTile(
+                              title: Text(
+                                quip,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              leading: Icon(Icons.message, color: Colors.white),
+                            )).toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
     );

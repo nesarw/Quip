@@ -160,217 +160,229 @@ class _EditProfilePageState extends State<EditProfilePage> {
           } else {
             return Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/loginpagebg.jpg'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.black, Colors.black87]),
-              ),
-              child: ListView(
-                children: <Widget>[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0),
-                        child: Text(
-                          'Edit Profile',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 34,
-                            fontWeight: FontWeight.w300,
+                    colors: [
+                      Colors.black.withOpacity(0.5),
+                      Colors.black.withOpacity(0.5),
+                    ],
+                  ),
+                ),
+                child: ListView(
+                  children: <Widget>[
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0),
+                          child: Text(
+                            'Edit Profile',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 34,
+                              fontWeight: FontWeight.w300,
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: <Widget>[
-                            Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: 50,
-                                  backgroundImage: photoURL != null
-                                      ? NetworkImage(photoURL!)
-                                      : AssetImage('assets/profile_photo.jpg') as ImageProvider,
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.black,
-                                    ),
-                                    child: IconButton(
-                                      icon: Icon(Icons.camera_alt, color: Colors.white),
-                                      onPressed: () {
-                                        showModalBottomSheet(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return SafeArea(
-                                              child: Wrap(
-                                                children: <Widget>[
-                                                  ListTile(
-                                                    leading: Icon(Icons.photo_library),
-                                                    title: Text('Gallery'),
-                                                    onTap: () {
-                                                      _pickImage(ImageSource.gallery);
-                                                      Navigator.of(context).pop();
-                                                    },
-                                                  ),
-                                                  ListTile(
-                                                    leading: Icon(Icons.photo_camera),
-                                                    title: Text('Camera'),
-                                                    onTap: () {
-                                                      _pickImage(ImageSource.camera);
-                                                      Navigator.of(context).pop();
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      },
-                                    ),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            children: <Widget>[
+                              Stack(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 50,
+                                    backgroundImage: photoURL != null
+                                        ? NetworkImage(photoURL!)
+                                        : AssetImage('assets/profile_photo.jpg') as ImageProvider,
                                   ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    'Name: $userName',
-                                    style: TextStyle(color: Colors.white, fontSize: 18),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Email: ${widget.email}',
-                                    style: TextStyle(color: Colors.white, fontSize: 18),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                  SizedBox(height: 16),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.black,
-                                      foregroundColor: Colors.white,
-                                      side: BorderSide(color: Colors.white, width: 2.0),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(30),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.black,
                                       ),
-                                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                                    ),
-                                    onPressed: _saveProfile,
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.save, color: Colors.white),
-                                        SizedBox(width: 5),
-                                        Text('Save Changes'),
-                                      ],
+                                      child: IconButton(
+                                        icon: Icon(Icons.camera_alt, color: Colors.white),
+                                        onPressed: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return SafeArea(
+                                                child: Wrap(
+                                                  children: <Widget>[
+                                                    ListTile(
+                                                      leading: Icon(Icons.photo_library),
+                                                      title: Text('Gallery'),
+                                                      onTap: () {
+                                                        _pickImage(ImageSource.gallery);
+                                                        Navigator.of(context).pop();
+                                                      },
+                                                    ),
+                                                    ListTile(
+                                                      leading: Icon(Icons.photo_camera),
+                                                      title: Text('Camera'),
+                                                      onTap: () {
+                                                        _pickImage(ImageSource.camera);
+                                                        Navigator.of(context).pop();
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            GestureDetector(
-                              onTap: () => _selectDate(context),
-                              child: AbsorbPointer(
-                                child: TextField(
-                                  controller: TextEditingController(
-                                    text: selectedDate == null
-                                        ? ''
-                                        : "${selectedDate!.toLocal()}".split(' ')[0],
-                                  ),
-                                  style: TextStyle(color: Colors.white),
-                                  decoration: InputDecoration(
-                                    labelText: 'Date of Birth',
-                                    labelStyle: TextStyle(color: Colors.white),
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.white),
+                              SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Text(
+                                      'Name: $userName',
+                                      style: TextStyle(color: Colors.white, fontSize: 18),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
-                                    focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.black87),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Email: ${widget.email}',
+                                      style: TextStyle(color: Colors.white, fontSize: 18),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                    SizedBox(height: 16),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.black,
+                                        foregroundColor: Colors.white,
+                                        side: BorderSide(color: Colors.white, width: 2.0),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                        ),
+                                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                                      ),
+                                      onPressed: _saveProfile,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.save, color: Colors.white),
+                                          SizedBox(width: 5),
+                                          Text('Save Changes'),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              GestureDetector(
+                                onTap: () => _selectDate(context),
+                                child: AbsorbPointer(
+                                  child: TextField(
+                                    controller: TextEditingController(
+                                      text: selectedDate == null
+                                          ? ''
+                                          : "${selectedDate!.toLocal()}".split(' ')[0],
+                                    ),
+                                    style: TextStyle(color: Colors.white),
+                                    decoration: InputDecoration(
+                                      labelText: 'Date of Birth',
+                                      labelStyle: TextStyle(color: Colors.white),
+                                      enabledBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.white),
+                                      ),
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(color: Colors.black87),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            SizedBox(height: 16),
-                            TextField(
-                              controller: _mobileController,
-                              keyboardType: TextInputType.phone,
-                              maxLength: 13, // +91 followed by 10 digits
-                              style: TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                counterText: '',
-                                labelText: 'Mobile Number',
-                                labelStyle: TextStyle(color: Colors.white),
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white),
+                              SizedBox(height: 16),
+                              TextField(
+                                controller: _mobileController,
+                                keyboardType: TextInputType.phone,
+                                maxLength: 13, // +91 followed by 10 digits
+                                style: TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  counterText: '',
+                                  labelText: 'Mobile Number',
+                                  labelStyle: TextStyle(color: Colors.white),
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white),
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.black87),
+                                  ),
                                 ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.black87),
-                                ),
+                                onTap: () {
+                                  if (!_mobileController.text.startsWith('+91')) {
+                                    _mobileController.text = '+91';
+                                  }
+                                },
+                                onChanged: (value) {
+                                  setState(() {
+                                    mobileNumber = value;
+                                  });
+                                },
                               ),
-                              onTap: () {
-                                if (!_mobileController.text.startsWith('+91')) {
-                                  _mobileController.text = '+91';
-                                }
-                              },
-                              onChanged: (value) {
-                                setState(() {
-                                  mobileNumber = value;
-                                });
-                              },
-                            ),
-                            SizedBox(height: 16),
-                            DropdownButtonFormField<String>(
-                              value: gender.isEmpty ? null : gender,
-                              decoration: InputDecoration(
-                                labelText: 'Gender',
-                                labelStyle: TextStyle(color: Colors.white),
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: gender.isEmpty ? Colors.black87 : Colors.white),
+                              SizedBox(height: 16),
+                              DropdownButtonFormField<String>(
+                                value: gender.isEmpty ? null : gender,
+                                decoration: InputDecoration(
+                                  labelText: 'Gender',
+                                  labelStyle: TextStyle(color: Colors.white),
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: gender.isEmpty ? Colors.black87 : Colors.white),
+                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(color: gender.isEmpty ? Colors.black87 : Colors.white),
+                                  ),
                                 ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: gender.isEmpty ? Colors.black87 : Colors.white),
-                                ),
+                                dropdownColor: Colors.black87,
+                                style: TextStyle(color: Colors.white),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    gender = newValue!;
+                                  });
+                                },
+                                items: genders.map<DropdownMenuItem<String>>((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
                               ),
-                              dropdownColor: Colors.black87,
-                              style: TextStyle(color: Colors.white),
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  gender = newValue!;
-                                });
-                              },
-                              items: genders.map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             );
           }
