@@ -61,13 +61,27 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _signInWithGoogle() async {
     try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          );
+        },
+      );
+
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        return; // The user canceled the sign-in
+        Navigator.pop(context); // Hide loading
+        return; // User canceled the sign-in
       }
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
+      final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
@@ -76,33 +90,57 @@ class _LoginPageState extends State<LoginPage> {
       final User? user = userCredential.user;
 
       if (user != null) {
-        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        try {
+          final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
 
-        if (!userDoc.exists) {
-          final userData = {
-            'name': user.displayName,
-            'email': user.email,
-            'photoURL': user.photoURL,
-          };
+          if (!userDoc.exists) {
+            final userData = {
+              'name': user.displayName ?? '',
+              'email': user.email ?? '',
+              'photoURL': user.photoURL ?? '',
+              'createdAt': FieldValue.serverTimestamp(),
+              'lastLogin': FieldValue.serverTimestamp(),
+            };
 
-          await FirebaseFirestore.instance.collection('users').doc(user.uid).set(userData);
+            await FirebaseFirestore.instance.collection('users').doc(user.uid).set(userData);
+          } else {
+            // Update last login time
+            await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+              'lastLogin': FieldValue.serverTimestamp(),
+            });
+          }
+
+          if (mounted) {
+            Navigator.pop(context); // Hide loading
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ConnectionsPage(user: user)),
+            );
+          }
+        } catch (e) {
+          print('Error updating user data: $e');
+          if (mounted) {
+            Navigator.pop(context); // Hide loading
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error updating user data. Please try again.'),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
         }
-
-        Future.microtask(() {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => ConnectionsPage(user: user)),
-          );
-        });
       }
     } catch (e) {
       print('Failed to sign in with Google: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to sign in with Google: ${e.toString()}'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (mounted) {
+        Navigator.pop(context); // Hide loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to sign in with Google. Please try again.'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -162,27 +200,27 @@ class _LoginPageState extends State<LoginPage> {
                           TextLogin(),
                         ],
                       ),
-                      SizedBox(height:50),
+                      SizedBox(height: 50),
                       GestureDetector(
                         onTap: _signInWithGoogle,
                         child: Container(
-                          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 25),
+                          padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 1),
-                            borderRadius: BorderRadius.circular(35),
+                            border: Border.all(color: Colors.white, width: 1.5),
+                            borderRadius: BorderRadius.circular(45),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
                               Image.network(
                                 'https://cdn-icons-png.flaticon.com/512/300/300221.png',
-                                height: 25,
+                                height: 30,
                               ),
-                              SizedBox(width: 12),
+                              SizedBox(width: 15),
                               Text(
                                 'Sign In with Google',
                                 style: TextStyle(
-                                  fontSize: 25,
+                                  fontSize: 30,
                                   color: Colors.white,
                                 ),
                               ),
