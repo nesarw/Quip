@@ -108,41 +108,66 @@ class MessageGeneratorService {
   Future<void> _initializeModel() async {
     if (_isModelInitialized) return;
 
-    try {
-      final response = await _client.post(
-        Uri.parse(_apiUrl),
-        headers: {
-          'Authorization': 'Bearer $_apiToken',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'inputs': '<|dating|><|message|>',
-          'parameters': {
-            'max_length': 60,
-            'num_return_sequences': 1,
-            'temperature': 0.9,
-            'top_p': 0.95,
-            'do_sample': true
-          }
-        }),
-      ).timeout(_timeout);
+    int retryCount = 0;
+    const maxInitRetries = 3;
+    const initialBackoff = Duration(seconds: 2);
 
-      if (response.statusCode == 200) {
-        _isModelInitialized = true;
-        print('Model initialized successfully');
-      } else {
-        print('Model initialization response: ${response.body}');
-        throw Exception('Failed to initialize model: ${response.statusCode}');
+    while (retryCount < maxInitRetries) {
+      try {
+        print('Attempting to initialize model (attempt ${retryCount + 1})');
+        
+        final response = await _client.post(
+          Uri.parse(_apiUrl),
+          headers: {
+            'Authorization': 'Bearer $_apiToken',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'inputs': '<|dating|><|message|>',
+            'parameters': {
+              'max_length': 60,
+              'num_return_sequences': 1,
+              'temperature': 0.9,
+              'top_p': 0.95,
+              'do_sample': true
+            }
+          }),
+        ).timeout(_timeout);
+
+        if (response.statusCode == 200) {
+          _isModelInitialized = true;
+          print('Model initialized successfully');
+          return;
+        } else if (response.statusCode == 503) {
+          print('Model is loading (attempt ${retryCount + 1})');
+          // Exponential backoff with jitter
+          final backoffDuration = initialBackoff * pow(2, retryCount) + 
+              Duration(milliseconds: _random.nextInt(1000));
+          await Future.delayed(backoffDuration);
+          retryCount++;
+          continue;
+        } else {
+          print('Model initialization failed with status code: ${response.statusCode}');
+          print('Response body: ${response.body}');
+          throw Exception('Failed to initialize model: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error during model initialization (attempt ${retryCount + 1}): $e');
+        if (retryCount < maxInitRetries - 1) {
+          final backoffDuration = initialBackoff * pow(2, retryCount);
+          await Future.delayed(backoffDuration);
+          retryCount++;
+        } else {
+          throw Exception('Failed to initialize model after $maxInitRetries attempts: $e');
+        }
       }
-    } catch (e) {
-      print('Error initializing model: $e');
-      rethrow;
     }
   }
 
   Future<String> generateMessage() async {
     int retryCount = 0;
     String lastError = '';
+    const initialBackoff = Duration(seconds: 2);
 
     while (retryCount < _maxRetries) {
       try {
@@ -170,15 +195,14 @@ class MessageGeneratorService {
               'temperature': temperature,
               'top_p': topP,
               'do_sample': true,
-              'repetition_penalty': 1.2,  // Added to prevent repetition
-              'length_penalty': 1.0,      // Added to encourage longer responses
-              'early_stopping': true      // Added to stop when complete
+              'repetition_penalty': 1.2,
+              'length_penalty': 1.0,
+              'early_stopping': true
             }
           }),
         ).timeout(_timeout);
 
         print('API Response Status: ${response.statusCode}');
-        print('API Response Body: ${response.body}');
 
         if (response.statusCode == 200) {
           final List<dynamic> jsonResponse = jsonDecode(response.body);
@@ -194,7 +218,6 @@ class MessageGeneratorService {
             generatedText = generatedText.replaceAll(RegExp(r'[^a-zA-Z0-9\s.,!?]+$'), '');
             generatedText = generatedText.trim().replaceAll(RegExp(r'\s+'), ' ');
             
-            // Check if the generated text is different from the prompt
             if (generatedText == prompt.replaceAll('<|$category|><|message|>', '').trim()) {
               print('Generated text matches prompt, retrying...');
               retryCount++;
@@ -211,8 +234,11 @@ class MessageGeneratorService {
             }
           }
         } else if (response.statusCode == 503) {
-          // Model is loading, wait and retry with exponential backoff
-          await Future.delayed(Duration(seconds: pow(2, retryCount).toInt()));
+          print('Model is loading, waiting before retry...');
+          // Exponential backoff with jitter for 503 errors
+          final backoffDuration = initialBackoff * pow(2, retryCount) + 
+              Duration(milliseconds: _random.nextInt(1000));
+          await Future.delayed(backoffDuration);
           retryCount++;
           continue;
         } else {
@@ -222,18 +248,20 @@ class MessageGeneratorService {
       } catch (e) {
         lastError = e.toString();
         print('Error generating message (attempt ${retryCount + 1}): $e');
-        retryCount++;
-        if (retryCount < _maxRetries) {
-          await Future.delayed(Duration(seconds: pow(2, retryCount).toInt()));
+        
+        if (retryCount < _maxRetries - 1) {
+          final backoffDuration = initialBackoff * pow(2, retryCount);
+          await Future.delayed(backoffDuration);
+          retryCount++;
+        } else {
+          print('All retry attempts failed. Last error: $lastError');
+          return _getRandomFallbackMessage(_getRandomCategory());
         }
       }
     }
 
-    // If all retries failed, use fallback message
-    print('All retry attempts failed. Last error: $lastError');
-    final fallbackMessage = _getRandomFallbackMessage(_getRandomCategory());
-    print('Using fallback message: $fallbackMessage');
-    return fallbackMessage;
+    print('Using fallback message after all retries failed');
+    return _getRandomFallbackMessage(_getRandomCategory());
   }
 
   void dispose() {

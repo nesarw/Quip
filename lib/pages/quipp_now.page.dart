@@ -5,6 +5,7 @@ import 'connections.page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:quip/services/message_generator.service.dart';
+import 'package:shimmer/shimmer.dart';
 
 class QuippNowPage extends StatefulWidget {
   final String username;
@@ -187,23 +188,33 @@ class _QuippNowPageState extends State<QuippNowPage> {
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 30),
-              if (isLoading)
-                CircularProgressIndicator(color: Colors.white)
-              else
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 20),
-                  padding: EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Text(
-                    currentQuip,
-                    style: TextStyle(color: Colors.white, fontSize: 24),
-                    textAlign: TextAlign.center,
-                  ),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: Colors.white24),
                 ),
+                child: isLoading
+                    ? Shimmer.fromColors(
+                        baseColor: Colors.black87,
+                        highlightColor: Colors.grey[800]!,
+                        child: Container(
+                          width: double.infinity,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                      )
+                    : Text(
+                        currentQuip,
+                        style: TextStyle(color: Colors.white, fontSize: 24),
+                        textAlign: TextAlign.center,
+                      ),
+              ),
               SizedBox(height: 50),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 32),
