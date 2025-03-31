@@ -4,9 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:quip/pages/user_profile.page.dart';
 import 'package:quip/widget/button.dart';
-import 'package:quip/widget/first.dart';
-import 'package:quip/widget/inputEmail.dart';
-import 'package:quip/widget/password.dart';
 import 'package:quip/widget/textLogin.dart';
 import 'package:quip/widget/verticalText.dart';
 import 'package:quip/pages/connections.page.dart';
@@ -21,13 +18,33 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  bool _isImageLoaded = false;
 
   @override
   void initState() {
     super.initState();
     _checkUserSession();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _preloadImage();
+  }
+
+  Future<void> _preloadImage() async {
+    if (!_isImageLoaded) {
+      try {
+        await precacheImage(AssetImage('assets/images/loginpagebg.jpg'), context);
+        if (mounted) {
+          setState(() {
+            _isImageLoaded = true;
+          });
+        }
+      } catch (e) {
+        print('Error preloading image: $e');
+      }
+    }
   }
 
   Future<void> _checkUserSession() async {
@@ -39,69 +56,6 @@ class _LoginPageState extends State<LoginPage> {
           MaterialPageRoute(builder: (context) => ConnectionsPage(user: user)),
         );
       });
-    }
-  }
-
-  Future<void> _signInWithEmailAndPassword() async {
-    String email = _emailController.text;
-    String password = _passwordController.text;
-
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Email and password are required'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
-
-    try {
-      print('Attempting to sign in with email: $email');
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      User? user = userCredential.user;
-
-      if (user != null) {
-        print('Successfully signed in: ${user.uid}');
-        Future.microtask(() {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => ConnectionsPage(user: user)),
-          );
-        });
-      }
-    } catch (e) {
-      String errorMessage;
-      if (e is FirebaseAuthException) {
-        switch (e.code) {
-          case 'invalid-email':
-            errorMessage = 'The email address is not valid.';
-            break;
-          case 'user-disabled':
-            errorMessage = 'The user account has been disabled.';
-            break;
-          case 'user-not-found':
-            errorMessage = 'No user found for that email.';
-            break;
-          case 'wrong-password':
-            errorMessage = 'Wrong password provided.';
-            break;
-          default:
-            errorMessage = 'An unknown error occurred.';
-        }
-      } else {
-        errorMessage = 'An unknown error occurred: ${e.toString()}';
-      }
-      print('Failed to sign in: $errorMessage');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to sign in: $errorMessage'),
-          duration: Duration(seconds: 2),
-        ),
-      );
     }
   }
 
@@ -157,56 +111,88 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-              begin: Alignment.topRight,
-              end: Alignment.bottomLeft,
-              colors: [Colors.black, Colors.black87]),
+          color: Colors.black,
         ),
-        child: ListView(
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                Row(children: <Widget>[
-                  VerticalText(),
-                  TextLogin(),
-                ]),
-                InputEmail(controller: _emailController),
-                PasswordInput(controller: _passwordController),
-                ButtonLogin(onPressed: _signInWithEmailAndPassword),
-                SizedBox(height: 20),
-                GestureDetector(
-                  onTap: _signInWithGoogle,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white),
-                          borderRadius: BorderRadius.circular(30),
+        child: Stack(
+          children: [
+            if (_isImageLoaded)
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                child: Image.asset(
+                  'assets/images/loginpagebg.jpg',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    print('Error loading image: $error');
+                    return Container(
+                      color: Colors.black,
+                      child: Center(
+                        child: Text(
+                          'Error loading background',
+                          style: TextStyle(color: Colors.white),
                         ),
-                        child: Row(
-                          children: <Widget>[
-                            Image.network(
-                              'https://cdn-icons-png.flaticon.com/512/300/300221.png',
-                              height: 20,
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'Sign In with Google',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: Colors.white,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.3),
+                    Colors.black.withOpacity(0.5),
+                  ],
+                ),
+              ),
+            ),
+            ListView(
+              children: <Widget>[
+                Container(
+                  height: MediaQuery.of(context).size.height,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          VerticalText(),
+                          TextLogin(),
+                        ],
+                      ),
+                      SizedBox(height:50),
+                      GestureDetector(
+                        onTap: _signInWithGoogle,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 25),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white, width: 1),
+                            borderRadius: BorderRadius.circular(35),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Image.network(
+                                'https://cdn-icons-png.flaticon.com/512/300/300221.png',
+                                height: 25,
                               ),
-                            ),
-                          ],
+                              SizedBox(width: 12),
+                              Text(
+                                'Sign In with Google',
+                                style: TextStyle(
+                                  fontSize: 25,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
-                FirstTime(),
               ],
             ),
           ],

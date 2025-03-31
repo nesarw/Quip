@@ -11,14 +11,14 @@ class _VerticalTextState extends State<VerticalText> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 60, left: 10),
+      padding: const EdgeInsets.only(top: 60, left: 0),
       child: RotatedBox(
           quarterTurns: -1,
           child: Text(
             'QUIP',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 58,
+              fontSize: 100,
               fontWeight: FontWeight.w900,
             ),
           )),
