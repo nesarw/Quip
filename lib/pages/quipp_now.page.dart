@@ -36,7 +36,7 @@ class _QuippNowPageState extends State<QuippNowPage> {
     _fetchReceiverUsername();
     _loadShufflesLeft();
     _resetShufflesAtMidnight();
-    _generateNewQuip(); // Generate initial quip
+    _generateNewQuip();
   }
 
   Future<void> _generateNewQuip() async {
@@ -58,37 +58,41 @@ class _QuippNowPageState extends State<QuippNowPage> {
         });
       }
     } else {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: Colors.black,
-            title: Text(
-              'No Free Shuffles Left',
-              style: TextStyle(color: Colors.white),
-            ),
-            content: Text(
-              'You have used all your free shuffles for today.',
-              style: TextStyle(color: Colors.white),
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.white,
-                ),
-                child: Text(
-                  'OK',
-                  style: TextStyle(color: Colors.black),
-                ),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
+      _showNoShufflesDialog();
     }
+  }
+
+  void _showNoShufflesDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.black,
+          title: Text(
+            'No Free Shuffles Left',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Text(
+            'You have used all your free shuffles for today.',
+            style: TextStyle(color: Colors.white),
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.white,
+              ),
+              child: Text(
+                'OK',
+                style: TextStyle(color: Colors.black),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _fetchReceiverUsername() async {
@@ -148,7 +152,6 @@ class _QuippNowPageState extends State<QuippNowPage> {
   }
 
   void _quipNow() async {
-    // Send the current quip to Firestore
     await FirebaseFirestore.instance.collection('quips').add({
       'currentSentQuip': currentQuip,
       'senderUserId': widget.user.uid,
@@ -156,10 +159,9 @@ class _QuippNowPageState extends State<QuippNowPage> {
       'receiverUserId': widget.receiverUserId,
       'receiverName': receiverUsername,
       'timestamp': FieldValue.serverTimestamp(),
-      'likedBy': [], // Initialize empty likedBy array
+      'likedBy': [],
     });
 
-    // Call the completion callback
     widget.onQuippNowComplete();
   }
 
@@ -188,8 +190,14 @@ class _QuippNowPageState extends State<QuippNowPage> {
               if (isLoading)
                 CircularProgressIndicator(color: Colors.white)
               else
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.white24),
+                  ),
                   child: Text(
                     currentQuip,
                     style: TextStyle(color: Colors.white, fontSize: 24),

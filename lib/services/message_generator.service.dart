@@ -17,45 +17,45 @@ class MessageGeneratorService {
 
   // Category-specific temperature values
   static const Map<String, double> _temperatureValues = {
-    'dating': 1.1,    // Increased for more creative dating messages
-    'flirty': 1.3,    // Increased for more playful flirty messages
-    'love': 0.8,      // Slightly increased for more emotional variety
-    'cheesy': 1.2     // Increased for more fun cheesy messages
+    'dating': 1.2,    // Increased for more creative dating messages
+    'flirty': 1.4,    // Increased for more playful flirty messages
+    'love': 0.9,      // Slightly increased for more emotional variety
+    'cheesy': 1.3     // Increased for more fun cheesy messages
   };
 
   // Category-specific top-p values
   static const Map<String, double> _topPValues = {
-    'dating': 0.98,   // Increased for more diverse dating messages
-    'flirty': 0.98,   // Increased for more diverse flirty messages
-    'love': 0.95,     // Slightly increased for more emotional variety
-    'cheesy': 0.98    // Increased for more diverse cheesy messages
+    'dating': 0.99,   // Increased for more diverse dating messages
+    'flirty': 0.99,   // Increased for more diverse flirty messages
+    'love': 0.97,     // Slightly increased for more emotional variety
+    'cheesy': 0.99    // Increased for more diverse cheesy messages
   };
 
   // Category-specific prompts
   static const Map<String, List<String>> _categoryPrompts = {
     'dating': [
-      "<|dating|><|message|>",
-      "<|dating|><|message|>Let's go on an adventure together",
-      "<|dating|><|message|>I'd love to get to know you better",
-      "<|dating|><|message|>Want to make some memories?"
+      "<|dating|><|message|>Let's create a beautiful story together",
+      "<|dating|><|message|>I'd love to explore the world with you",
+      "<|dating|><|message|>Want to make unforgettable memories?",
+      "<|dating|><|message|>Let's write our own adventure"
     ],
     'flirty': [
-      "<|flirty|><|message|>",
-      "<|flirty|><|message|>You're absolutely amazing",
+      "<|flirty|><|message|>Your smile lights up my world",
+      "<|flirty|><|message|>You're absolutely breathtaking",
       "<|flirty|><|message|>I can't stop thinking about you",
       "<|flirty|><|message|>You make my heart skip a beat"
     ],
     'love': [
-      "<|love|><|message|>",
       "<|love|><|message|>Every moment with you is precious",
-      "<|love|><|message|>You mean the world to me",
+      "<|love|><|message|>You're my favorite hello and hardest goodbye",
+      "<|love|><|message|>You make my world complete",
       "<|love|><|message|>My heart belongs to you"
     ],
     'cheesy': [
-      "<|cheesy|><|message|>",
       "<|cheesy|><|message|>You're sweeter than sugar",
       "<|cheesy|><|message|>You're the cheese to my macaroni",
-      "<|cheesy|><|message|>You're the peanut butter to my jelly"
+      "<|cheesy|><|message|>You're the peanut butter to my jelly",
+      "<|cheesy|><|message|>You're the sprinkles to my ice cream"
     ]
   };
 
@@ -153,6 +153,8 @@ class MessageGeneratorService {
         final topP = _topPValues[category] ?? 0.95;
 
         print('Generating message for category: $category (attempt ${retryCount + 1})');
+        print('Using prompt: $prompt');
+        print('Temperature: $temperature, Top-p: $topP');
 
         final response = await _client.post(
           Uri.parse(_apiUrl),
@@ -167,7 +169,10 @@ class MessageGeneratorService {
               'num_return_sequences': 1,
               'temperature': temperature,
               'top_p': topP,
-              'do_sample': true
+              'do_sample': true,
+              'repetition_penalty': 1.2,  // Added to prevent repetition
+              'length_penalty': 1.0,      // Added to encourage longer responses
+              'early_stopping': true      // Added to stop when complete
             }
           }),
         ).timeout(_timeout);
@@ -189,17 +194,25 @@ class MessageGeneratorService {
             generatedText = generatedText.replaceAll(RegExp(r'[^a-zA-Z0-9\s.,!?]+$'), '');
             generatedText = generatedText.trim().replaceAll(RegExp(r'\s+'), ' ');
             
+            // Check if the generated text is different from the prompt
+            if (generatedText == prompt.replaceAll('<|$category|><|message|>', '').trim()) {
+              print('Generated text matches prompt, retrying...');
+              retryCount++;
+              continue;
+            }
+            
             if (!generatedText.endsWith('?') && !generatedText.endsWith('!') && !generatedText.endsWith('.')) {
               generatedText += category == 'flirty' || category == 'dating' ? ' 😉' : ' ❤️';
             }
             
             if (generatedText.isNotEmpty && generatedText.length > 10 && generatedText.split(' ').length <= 35) {
+              print('Successfully generated unique message from API: $generatedText');
               return generatedText;
             }
           }
         } else if (response.statusCode == 503) {
-          // Model is loading, wait and retry
-          await Future.delayed(Duration(seconds: 2));
+          // Model is loading, wait and retry with exponential backoff
+          await Future.delayed(Duration(seconds: pow(2, retryCount).toInt()));
           retryCount++;
           continue;
         } else {
@@ -211,14 +224,16 @@ class MessageGeneratorService {
         print('Error generating message (attempt ${retryCount + 1}): $e');
         retryCount++;
         if (retryCount < _maxRetries) {
-          await Future.delayed(Duration(seconds: 1));
+          await Future.delayed(Duration(seconds: pow(2, retryCount).toInt()));
         }
       }
     }
 
     // If all retries failed, use fallback message
     print('All retry attempts failed. Last error: $lastError');
-    return _getRandomFallbackMessage(_getRandomCategory());
+    final fallbackMessage = _getRandomFallbackMessage(_getRandomCategory());
+    print('Using fallback message: $fallbackMessage');
+    return fallbackMessage;
   }
 
   void dispose() {
