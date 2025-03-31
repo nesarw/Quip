@@ -66,8 +66,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
         setState(() {
           userName = userDoc['name'];
           photoURL = userDoc['photoURL'];
-          Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
-          userLikes = userData != null && userData.containsKey('likes') ? userData['likes'] : 0; // Fetch likes
         });
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -85,16 +83,35 @@ class _UserProfilePageState extends State<UserProfilePage> {
     try {
       // Fetch the current user's ID
       String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+      print('Current User ID: $currentUserId');
 
-      // Retrieve the user document from Firestore
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUserId).get();
+      // Query the 'quips' collection to get all quips where the user is the sender
+      QuerySnapshot quipSnapshot = await FirebaseFirestore.instance
+          .collection('quips')
+          .where('senderUserId', isEqualTo: currentUserId)
+          .get();
 
-      // Safely access the user data
-      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+      print('Number of quips found: ${quipSnapshot.docs.length}');
 
-      // Update the state with the likes count
+      // Count the total likes from all quips sent by the user
+      int totalLikes = 0;
+      for (var doc in quipSnapshot.docs) {
+        Map<String, dynamic> quipData = doc.data() as Map<String, dynamic>;
+        print('Quip Data: $quipData');
+        
+        // Get the likedBy array and count its length
+        List<dynamic>? likedBy = quipData['likedBy'] as List<dynamic>?;
+        if (likedBy != null) {
+          totalLikes += likedBy.length;
+          print('Updated total likes: $totalLikes');
+        }
+      }
+
+      print('Final total likes: $totalLikes');
+
+      // Update the state with the total likes count
       setState(() {
-        userLikes = userData != null && userData.containsKey('likes') ? userData['likes'] : 0;
+        userLikes = totalLikes;
       });
     } catch (e) {
       print('Error fetching user likes: $e');
