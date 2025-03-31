@@ -173,115 +173,126 @@ class _QuippNowPageState extends State<QuippNowPage> {
       child: Scaffold(
         body: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.black, Colors.black87],
+            image: DecorationImage(
+              image: AssetImage('assets/images/loginpagebg.jpg'),
+              fit: BoxFit.cover,
             ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(
-                receiverUsername,
-                style: TextStyle(color: Colors.white, fontSize: 24),
-                textAlign: TextAlign.center,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.1),
+                  Colors.black.withOpacity(0.5),
+                ],
               ),
-              SizedBox(height: 30),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 20),
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.white24),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  receiverUsername,
+                  style: TextStyle(color: Colors.white, fontSize: 24),
+                  textAlign: TextAlign.center,
                 ),
-                child: isLoading
-                    ? Shimmer.fromColors(
-                        baseColor: Colors.black87,
-                        highlightColor: Colors.grey[800]!,
-                        child: Container(
-                          width: double.infinity,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                      )
-                    : Text(
-                        currentQuip,
-                        style: TextStyle(color: Colors.white, fontSize: 24),
-                        textAlign: TextAlign.center,
-                      ),
-              ),
-              SizedBox(height: 50),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 32),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 150,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                foregroundColor: Colors.white,
-                                side: BorderSide(color: Colors.white, width: 2.0),
-                                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              ),
-                              onPressed: shufflesLeft > 0 ? () async {
-                                await _generateNewQuip();
-                                await _decrementShuffles();
-                              } : null,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.shuffle, color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Text('Shuffle'),
-                                ],
-                              ),
+                SizedBox(height: 30),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: isLoading
+                      ? Shimmer.fromColors(
+                          baseColor: Colors.black87,
+                          highlightColor: Colors.grey[800]!,
+                          child: Container(
+                            width: double.infinity,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
                             ),
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            '$shufflesLeft/5 Left',
-                            style: TextStyle(color: Colors.white70),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 150,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          side: BorderSide(color: Colors.white, width: 2.0),
-                          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        )
+                      : Text(
+                          currentQuip,
+                          style: TextStyle(color: Colors.white, fontSize: 24),
+                          textAlign: TextAlign.center,
                         ),
-                        onPressed: _quipNow,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
+                ),
+                SizedBox(height: 50),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 32),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
                           children: [
-                            Icon(Icons.send, color: Colors.white),
-                            SizedBox(width: 8),
-                            Text('Send Quip'),
+                            Container(
+                              width: 150,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black,
+                                  foregroundColor: Colors.white,
+                                  side: BorderSide(color: Colors.white, width: 2.0),
+                                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                ),
+                                onPressed: shufflesLeft > 0 ? () async {
+                                  await _generateNewQuip();
+                                  await _decrementShuffles();
+                                } : null,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.shuffle, color: Colors.white),
+                                    SizedBox(width: 8),
+                                    Text('Shuffle'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              '$shufflesLeft/5 Left',
+                              style: TextStyle(color: Colors.white70),
+                            ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+                      Container(
+                        width: 150,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white,
+                            side: BorderSide(color: Colors.white, width: 2.0),
+                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          ),
+                          onPressed: _quipNow,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.send, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text('Send Quip'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

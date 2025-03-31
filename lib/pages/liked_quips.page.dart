@@ -88,55 +88,66 @@ class _LikedQuipsPageState extends State<LikedQuipsPage> {
           ? LikedQuipsShimmer()
           : Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.black, Colors.black87],
+                image: DecorationImage(
+                  image: AssetImage('assets/images/loginpagebg.jpg'),
+                  fit: BoxFit.cover,
                 ),
               ),
-              child: likedQuips.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.favorite_border,
-                            color: Colors.grey,
-                            size: 50.0,
-                          ),
-                          SizedBox(height: 10.0),
-                          Text(
-                            'No liked quips yet',
-                            style: TextStyle(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.1),
+                      Colors.black.withOpacity(0.5),
+                    ],
+                  ),
+                ),
+                child: likedQuips.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.favorite_border,
                               color: Colors.grey,
-                              fontSize: 32,
-                              fontWeight: FontWeight.w200,
+                              size: 50.0,
                             ),
-                          ),
-                        ],
+                            SizedBox(height: 10.0),
+                            Text(
+                              'No liked quips yet',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w200,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: likedQuips.length,
+                        itemBuilder: (context, index) {
+                          final quip = likedQuips[index];
+                          return Card(
+                            margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            color: Colors.white.withOpacity(0.1),
+                            child: ListTile(
+                              title: Text(
+                                quip['currentSentQuip'] ?? 'No Quip',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              subtitle: Text(
+                                'Liked by ${quip['receiverName'] ?? 'Unknown'}',
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                              leading: Icon(Icons.favorite, color: Colors.red),
+                            ),
+                          );
+                        },
                       ),
-                    )
-                  : ListView.builder(
-                      itemCount: likedQuips.length,
-                      itemBuilder: (context, index) {
-                        final quip = likedQuips[index];
-                        return Card(
-                          margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                          color: Colors.white.withOpacity(0.1),
-                          child: ListTile(
-                            title: Text(
-                              quip['currentSentQuip'] ?? 'No Quip',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            subtitle: Text(
-                              'Liked by ${quip['receiverName'] ?? 'Unknown'}',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                            leading: Icon(Icons.favorite, color: Colors.red),
-                          ),
-                        );
-                      },
-                    ),
+              ),
             ),
     );
   }
