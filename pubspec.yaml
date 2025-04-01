@@ -21,6 +21,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   image_picker: ^1.1.2
   animated_text_kit: ^4.2.2
+  flutter_native_splash: ^2.3.6
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
@@ -33,3 +35,5 @@ flutter:
   assets:
     - assets/images/loginpagebg.jpg
     - assets/images/profile_photo.jpg
+    - assets/images/appicon1.jpeg
+    - assets/images/splashscreen.jpeg
