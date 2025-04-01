@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import '../config.dart';
 
 class MessageGeneratorService {
-  static const String _apiToken = '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';
+  static const String _apiToken = Config.huggingFaceApiToken;
   static const String _apiUrl = 'https://api-inference.huggingface.co/models/nesar2004/message-generator-gpt2';
   static const int _maxRetries = 3;
   static const Duration _timeout = Duration(seconds: 30);
