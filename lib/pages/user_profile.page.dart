@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Add this import
 import 'package:quip/widget/bottom_navigation_bar.dart'; // Add this import
 import 'package:quip/pages/edit_profile.page.dart'; // Add this import
+import 'package:quip/pages/menu_page.dart';
 import 'package:quip/widget/profile_shimmer.dart';
 import 'dart:io'; // Add this import
 
@@ -206,14 +207,30 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start, // Align to the left
                       children: <Widget>[
                         Padding(
-                          padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0), // Add margin from the top
-                          child: Text(
-                            'User Profile',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 34,
-                              fontWeight: FontWeight.w300,
-                            ),
+                          padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'User Profile',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 34,
+                                  fontWeight: FontWeight.w300,
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.menu, color: Colors.white),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MenuPage(user: widget.user),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         ),
                         Padding(
