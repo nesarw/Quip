@@ -19,43 +19,43 @@ class MessageGeneratorService {
   static const Map<String, double> _temperatureValues = {
     'dating': 1.2,    // Increased for more creative dating messages
     'flirty': 1.4,    // Increased for more playful flirty messages
-    'love': 0.9,      // Slightly increased for more emotional variety
+    'love': 1.1,      // Increased for more emotional variety
     'cheesy': 1.3     // Increased for more fun cheesy messages
   };
 
   // Category-specific top-p values
   static const Map<String, double> _topPValues = {
-    'dating': 0.99,   // Increased for more diverse dating messages
-    'flirty': 0.99,   // Increased for more diverse flirty messages
-    'love': 0.97,     // Slightly increased for more emotional variety
-    'cheesy': 0.99    // Increased for more diverse cheesy messages
+    'dating': 0.98,   // Increased for more diverse dating messages
+    'flirty': 0.98,   // Increased for more diverse flirty messages
+    'love': 0.97,     // Increased for more emotional variety
+    'cheesy': 0.98    // Increased for more diverse cheesy messages
   };
 
   // Category-specific prompts
   static const Map<String, List<String>> _categoryPrompts = {
     'dating': [
-      "<|dating|><|message|>Let's create a beautiful story together",
-      "<|dating|><|message|>I'd love to explore the world with you",
-      "<|dating|><|message|>Want to make unforgettable memories?",
-      "<|dating|><|message|>Let's write our own adventure"
+      "Let's create a beautiful story together",
+      "I'd love to explore the world with you",
+      "Want to make unforgettable memories",
+      "Let's write our own adventure"
     ],
     'flirty': [
-      "<|flirty|><|message|>Your smile lights up my world",
-      "<|flirty|><|message|>You're absolutely breathtaking",
-      "<|flirty|><|message|>I can't stop thinking about you",
-      "<|flirty|><|message|>You make my heart skip a beat"
+      "Your smile lights up my world",
+      "You're absolutely breathtaking",
+      "I can't stop thinking about you",
+      "You make my heart skip a beat"
     ],
     'love': [
-      "<|love|><|message|>Every moment with you is precious",
-      "<|love|><|message|>You're my favorite hello and hardest goodbye",
-      "<|love|><|message|>You make my world complete",
-      "<|love|><|message|>My heart belongs to you"
+      "Every moment with you is precious",
+      "You're my favorite hello and hardest goodbye",
+      "You make my world complete",
+      "My heart belongs to you"
     ],
     'cheesy': [
-      "<|cheesy|><|message|>You're sweeter than sugar",
-      "<|cheesy|><|message|>You're the cheese to my macaroni",
-      "<|cheesy|><|message|>You're the peanut butter to my jelly",
-      "<|cheesy|><|message|>You're the sprinkles to my ice cream"
+      "You're sweeter than sugar",
+      "You're the cheese to my macaroni",
+      "You're the peanut butter to my jelly",
+      "You're the sprinkles to my ice cream"
     ]
   };
 
@@ -102,7 +102,33 @@ class MessageGeneratorService {
 
   String _constructPrompt(String category) {
     final prompts = _categoryPrompts[category] ?? _categoryPrompts['dating']!;
-    return prompts[_random.nextInt(prompts.length)];
+    final prompt = prompts[_random.nextInt(prompts.length)];
+    // Add a random seed to encourage variation
+    return "<|$category|><|message|>$prompt ${_random.nextInt(100)}";
+  }
+
+  bool _isValidGeneratedText(String text, String prompt, String category) {
+    // Remove the prompt and any special tokens
+    String cleanPrompt = prompt.replaceAll('<|$category|><|message|>', '').trim();
+    String cleanText = text.replaceAll('<|$category|><|message|>', '').trim();
+    
+    // Remove any numbers from both prompt and text
+    cleanPrompt = cleanPrompt.replaceAll(RegExp(r'\d+'), '');
+    cleanText = cleanText.replaceAll(RegExp(r'\d+'), '');
+    
+    // Check if the generated text is too similar to the prompt
+    // Only check if it's an exact match or starts with the prompt
+    if (cleanText.toLowerCase() == cleanPrompt.toLowerCase() || 
+        cleanText.toLowerCase().startsWith(cleanPrompt.toLowerCase())) {
+      return false;
+    }
+    
+    // Check minimum length and word count
+    if (cleanText.length < 3 || cleanText.split(' ').length < 1) {
+      return false;
+    }
+    
+    return true;
   }
 
   Future<void> _initializeModel() async {
@@ -190,14 +216,23 @@ class MessageGeneratorService {
           body: jsonEncode({
             'inputs': prompt,
             'parameters': {
-              'max_length': 60,
+              'max_length': 50,  // Increased for more complete messages
               'num_return_sequences': 1,
               'temperature': temperature,
               'top_p': topP,
               'do_sample': true,
-              'repetition_penalty': 1.2,
-              'length_penalty': 1.0,
-              'early_stopping': true
+              'repetition_penalty': 1.2,  // Increased to prevent repetition
+              'length_penalty': 1.0,      // Balanced length penalty
+              'early_stopping': true,
+              'no_repeat_ngram_size': 2,  // Increased to prevent repetition
+              'top_k': 30,                // Increased for more variety
+              'num_beams': 1,
+              'pad_token_id': 50256,
+              'eos_token_id': 50256,
+              'return_full_text': false,   // Added to get only the generated part
+              'min_length': 3,             // Set minimum length to 3
+              'max_new_tokens': 25,        // Increased to allow longer messages
+              'seed': _random.nextInt(1000) // Added to ensure variation
             }
           }),
         ).timeout(_timeout);
@@ -213,13 +248,20 @@ class MessageGeneratorService {
             generatedText = generatedText.replaceAll('<|message|>', '').trim();
             generatedText = generatedText.replaceAll('<|$category|>', '').trim();
             
-            // Additional cleaning
-            generatedText = generatedText.replaceAll(RegExp(r'^[^a-zA-Z0-9]+'), '');
-            generatedText = generatedText.replaceAll(RegExp(r'[^a-zA-Z0-9\s.,!?]+$'), '');
+            // Additional cleaning - remove numbers and clean up text
+            generatedText = generatedText.replaceAll(RegExp(r'\d+'), ''); // Remove all numbers
+            generatedText = generatedText.replaceAll(RegExp(r'^[^a-zA-Z0-9]+'), ''); // Remove leading special chars
+            generatedText = generatedText.replaceAll(RegExp(r'[^a-zA-Z0-9\s.,!?]+$'), ''); // Remove trailing special chars
             generatedText = generatedText.trim().replaceAll(RegExp(r'\s+'), ' ');
             
-            if (generatedText == prompt.replaceAll('<|$category|><|message|>', '').trim()) {
-              print('Generated text matches prompt, retrying...');
+            // Ensure the message starts with a capital letter
+            if (generatedText.isNotEmpty) {
+              generatedText = generatedText[0].toUpperCase() + generatedText.substring(1);
+            }
+            
+            // Validate the generated text
+            if (!_isValidGeneratedText(generatedText, prompt, category)) {
+              print('Generated text is invalid or too similar to prompt, retrying...');
               retryCount++;
               continue;
             }
@@ -228,7 +270,7 @@ class MessageGeneratorService {
               generatedText += category == 'flirty' || category == 'dating' ? ' 😉' : ' ❤️';
             }
             
-            if (generatedText.isNotEmpty && generatedText.length > 10 && generatedText.split(' ').length <= 35) {
+            if (generatedText.isNotEmpty && generatedText.length >= 3 && generatedText.split(' ').length <= 35) {
               print('Successfully generated unique message from API: $generatedText');
               return generatedText;
             }
