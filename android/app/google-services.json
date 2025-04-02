@@ -1,18 +1,40 @@
 {
   "project_info": {
     "project_number": "810458437553",
+    "firebase_url": "https://quip-cf207-default-rtdb.firebaseio.com",
     "project_id": "quip-cf207",
     "storage_bucket": "quip-cf207.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:810458437553:android:322796e2b9da8f71cf0f90",
+        "mobilesdk_app_id": "1:810458437553:android:35e651e959a1d915cf0f90",
         "android_client_info": {
-          "package_name": "com.example.quip"
+          "package_name": "com.nesar.quip"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "810458437553-c4sa2771bqu6sdjbf7lh5ovat65elnsn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nesar.quip",
+            "certificate_hash": "be3552224ac413d6d932584d0df3eb1201d1782d"
+          }
+        },
+        {
+          "client_id": "810458437553-om3iaf0kgh2rjubj0qu1os8ra64fk833.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nesar.quip",
+            "certificate_hash": "557160ce6aabc3e3a9fe8d391aff65af92e4f1b1"
+          }
+        },
+        {
+          "client_id": "810458437553-vtu4dhpt3prgucvt21ipl4j0dhqg2gp6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBGRc3V82IbJDHArWCNg1pixT3MgHS-Yzo"
@@ -20,7 +42,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "810458437553-5q73rs3pkkerjheog3jo63fsbf3r2sd8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "810458437553-o74lrfftpjmaj6eivcailn1lfvq1ho68.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.quip"
+              }
+            }
+          ]
         }
       }
     }

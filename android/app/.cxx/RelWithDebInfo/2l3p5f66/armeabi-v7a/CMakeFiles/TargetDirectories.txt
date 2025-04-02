@@ -1,0 +1,2 @@
+/Users/nesar/AndroidStudioProjects/Quip/android/app/.cxx/RelWithDebInfo/2l3p5f66/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/nesar/AndroidStudioProjects/Quip/android/app/.cxx/RelWithDebInfo/2l3p5f66/armeabi-v7a/CMakeFiles/rebuild_cache.dir

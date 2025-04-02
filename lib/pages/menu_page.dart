@@ -302,21 +302,14 @@ class MenuPage extends StatelessWidget {
                             children: [
                               Text(
                                 'Need help? Visit our website for support!',
+
                                 style: TextStyle(color: Colors.white, fontSize: 16),
                               ),
                               SizedBox(height: 20),
-                              ElevatedButton.icon(
-                                icon: Icon(Icons.web),
-                                label: Text('Visit Website'),
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  _launchURL(context, 'https://nesarw.netlify.app/');
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.black,
-                                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                ),
+                              Text(
+                                'https://nesarw.netlify.app/',
+
+                                style: TextStyle(color: Colors.white, fontSize: 16),
                               ),
                             ],
                           ),

@@ -1,0 +1,1 @@
+/Users/nesar/AndroidStudioProjects/Quip/build/app/intermediates/cxx/RelWithDebInfo/2l3p5f66/obj/arm64-v8a
