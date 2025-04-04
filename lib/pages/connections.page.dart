@@ -25,8 +25,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   bool _isProfileIncomplete = false;
   bool _isLoading = true;
   List<String> _contacts = [];
-  final Map<String, String> _contactUserIds = {}; // Store contact user IDs here
-
+  final Map<String, String> _contactUserIds = {};
+  bool _isFetchingContacts = false;
   final List<Widget> _pages = [];
 
   @override
@@ -36,104 +36,163 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   }
 
   Future<void> _checkProfileCompletion() async {
-    setState(() {
-      _isLoading = true;
-    });
-    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
-    if (userDoc.exists) {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.user.uid)
+          .get();
+          
+      if (!userDoc.exists) {
+        print('User document does not exist');
+        setState(() {
+          _isProfileIncomplete = true;
+          _isLoading = false;
+        });
+        return;
+      }
+
       Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
-      bool isIncomplete = false;
-      if (data['dateOfBirth'] == null) {
-        isIncomplete = true;
-      }
-      if (data['gender'] == null) {
-        isIncomplete = true;
-      }
-      if (data['mobileNumber'] == null) {
-        isIncomplete = true;
-      }
+      bool isIncomplete = data['dateOfBirth'] == null ||
+                         data['gender'] == null ||
+                         data['mobileNumber'] == null;
+                         
       setState(() {
         _isProfileIncomplete = isIncomplete;
       });
       
+      // Initialize pages first
+      setState(() {
+        _pages.clear();
+        _pages.addAll([
+          ConnectionsPageContent(
+            user: widget.user,
+            isProfileIncomplete: _isProfileIncomplete,
+            contacts: _contacts,
+          ),
+          QuippInboxPage(user: widget.user),
+          UserProfilePage(user: widget.user),
+        ]);
+        _isLoading = false;
+      });
+
       // Only fetch contacts if profile is complete
-      if (!isIncomplete) {
-        await _fetchContacts();
+      if (!isIncomplete && !_isFetchingContacts) {
+        _fetchContactsInBackground();
       }
+    } catch (e, stackTrace) {
+      print('Error in _checkProfileCompletion: $e');
+      print('Stack trace: $stackTrace');
+      setState(() {
+        _isLoading = false;
+        _isProfileIncomplete = true;
+      });
     }
-    
-    setState(() {
-      _pages.clear();
-      _pages.addAll([
-        ConnectionsPageContent(
-          user: widget.user,
-          isProfileIncomplete: _isProfileIncomplete,
-          contacts: _contacts,
-        ),
-        QuippInboxPage(user: widget.user),
-        UserProfilePage(user: widget.user),
-      ]);
-      _isLoading = false;
-    });
   }
 
-  Future<void> _fetchContacts() async {
-    if (await FlutterContacts.requestPermission()) {
-      List<Contact> contacts = await FlutterContacts.getContacts(withProperties: true);
-      QuerySnapshot userSnapshot = await FirebaseFirestore.instance.collection('users').get();
+  Future<void> _fetchContactsInBackground() async {
+    if (_isFetchingContacts) return;
+    
+    setState(() {
+      _isFetchingContacts = true;
+    });
 
-      // Get current user's phone number
+    try {
+      if (!await FlutterContacts.requestPermission()) {
+        print('Contact permission denied');
+        setState(() {
+          _isFetchingContacts = false;
+        });
+        return;
+      }
+
+      // Get current user's phone number first
       String currentUserPhoneNumber = '';
-      DocumentSnapshot currentUserDoc = await FirebaseFirestore.instance.collection('users').doc(widget.user.uid).get();
+      DocumentSnapshot currentUserDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.user.uid)
+          .get();
+          
       if (currentUserDoc.exists) {
         currentUserPhoneNumber = (currentUserDoc.data() as Map<String, dynamic>)['mobileNumber'] as String? ?? '';
         currentUserPhoneNumber = currentUserPhoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
       }
 
-      List<String> userPhoneNumbers = userSnapshot.docs.map((doc) {
+      // Fetch contacts in chunks
+      List<Contact> contacts = await FlutterContacts.getContacts(withProperties: true);
+      int chunkSize = 50;
+      int totalContacts = contacts.length;
+      
+      // Create a map to store user phone numbers for faster lookup
+      Map<String, String> phoneToUserId = {};
+      
+      // Fetch all users in one query and create a lookup map
+      QuerySnapshot userSnapshot = await FirebaseFirestore.instance.collection('users').get();
+      for (var doc in userSnapshot.docs) {
         String phoneNumber = (doc.data() as Map<String, dynamic>)['mobileNumber'] as String? ?? '';
-        return phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
-      }).toList();
+        phoneNumber = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
+        phoneToUserId[phoneNumber] = doc.id;
+      }
 
-      setState(() {
-        _contacts = contacts
-            .where((contact) {
-              String contactNumber = contact.phones.isNotEmpty ? contact.phones.first.number : '';
-              contactNumber = contactNumber.replaceAll(RegExp(r'[^0-9]'), '');
-              if (!contactNumber.startsWith('91') && contactNumber.length == 10) {
-                contactNumber = '91$contactNumber';
-              }
-              // Exclude current user's phone number from contacts
-              return userPhoneNumbers.contains(contactNumber) && contactNumber != currentUserPhoneNumber;
-            })
-            .map((contact) {
-              String contactNumber = contact.phones.isNotEmpty ? contact.phones.first.number : '';
-              contactNumber = contactNumber.replaceAll(RegExp(r'[^0-9]'), '');
-              if (!contactNumber.startsWith('91') && contactNumber.length == 10) {
-                contactNumber = '91$contactNumber';
-              }
-              String userId = '';
-              for (var doc in userSnapshot.docs) {
-                if ((doc.data() as Map<String, dynamic>)['mobileNumber'].replaceAll(RegExp(r'[^0-9]'), '') == contactNumber) {
-                  userId = doc.id;
-                  break;
-                }
-              }
-              _contactUserIds[contact.displayName] = userId; // Store user ID
-              return contact.displayName;
-            })
-            .toList();
-        print('Filtered contacts: $_contacts'); // Add debug print
-      });
-    } else {
-      print('Permission denied'); // Add debug print
+      // Process contacts in chunks
+      for (int i = 0; i < totalContacts; i += chunkSize) {
+        int end = (i + chunkSize < totalContacts) ? i + chunkSize : totalContacts;
+        List<Contact> chunk = contacts.sublist(i, end);
+        
+        List<String> newContacts = [];
+        Map<String, String> newContactUserIds = {};
+
+        for (var contact in chunk) {
+          if (contact.phones.isEmpty) continue;
+          
+          String contactNumber = contact.phones.first.number;
+          contactNumber = contactNumber.replaceAll(RegExp(r'[^0-9]'), '');
+          
+          if (!contactNumber.startsWith('91') && contactNumber.length == 10) {
+            contactNumber = '91$contactNumber';
+          }
+          
+          if (phoneToUserId.containsKey(contactNumber) && contactNumber != currentUserPhoneNumber) {
+            newContacts.add(contact.displayName);
+            newContactUserIds[contact.displayName] = phoneToUserId[contactNumber]!;
+          }
+        }
+
+        // Update state with new contacts
+        if (mounted) {
+          setState(() {
+            _contacts.addAll(newContacts);
+            _contactUserIds.addAll(newContactUserIds);
+            
+            // Update the ConnectionsPageContent with new contacts
+            _pages[0] = ConnectionsPageContent(
+              user: widget.user,
+              isProfileIncomplete: _isProfileIncomplete,
+              contacts: _contacts,
+            );
+          });
+        }
+      }
+      
+      print('Successfully fetched ${_contacts.length} contacts');
+    } catch (e, stackTrace) {
+      print('Error in _fetchContacts: $e');
+      print('Stack trace: $stackTrace');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFetchingContacts = false;
+        });
+      }
     }
   }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      _checkProfileCompletion(); // Re-check profile completion and fetch contacts on tab change
     });
   }
 

@@ -4,17 +4,32 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quip/pages/login.page.dart';
 import 'package:quip/pages/connections.page.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'dart:async';
 
 void main() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  
-  await Firebase.initializeApp();
-  
-  // Remove splash screen after initialization
-  FlutterNativeSplash.remove();
-  
-  runApp(MyApp());
+  try {
+    WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+    FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+    
+    await Firebase.initializeApp();
+    print('Firebase initialized successfully');
+    
+    // Remove splash screen after initialization
+    FlutterNativeSplash.remove();
+    
+    runApp(MyApp());
+  } catch (e, stackTrace) {
+    print('Error initializing Firebase: $e');
+    print('Stack trace: $stackTrace');
+    // Show error UI instead of crashing
+    runApp(MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Text('Error initializing app. Please try again later.'),
+        ),
+      ),
+    ));
+  }
 }
 
 class MyApp extends StatelessWidget {
