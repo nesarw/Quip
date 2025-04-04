@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "810458437553-6m52sj0gt7kfde3u1he8up2eo94pe3dl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nesar.quip",
+            "certificate_hash": "c0ba48b253d574018a75cdb4ae78a3092654acbf"
+          }
+        },
+        {
           "client_id": "810458437553-c4sa2771bqu6sdjbf7lh5ovat65elnsn.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -28,6 +36,14 @@
           "android_info": {
             "package_name": "com.nesar.quip",
             "certificate_hash": "557160ce6aabc3e3a9fe8d391aff65af92e4f1b1"
+          }
+        },
+        {
+          "client_id": "810458437553-s8emeottin1msdipek5qcf3tm39up7pe.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nesar.quip",
+            "certificate_hash": "f6cb78908f1f6f1db54e120dd23f29136ae079d8"
           }
         },
         {

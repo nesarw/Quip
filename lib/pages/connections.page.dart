@@ -55,8 +55,13 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
       setState(() {
         _isProfileIncomplete = isIncomplete;
       });
+      
+      // Only fetch contacts if profile is complete
+      if (!isIncomplete) {
+        await _fetchContacts();
+      }
     }
-    await _fetchContacts(); // Fetch contacts after checking profile completion
+    
     setState(() {
       _pages.clear();
       _pages.addAll([
