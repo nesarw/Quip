@@ -28,14 +28,28 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   final Map<String, String> _contactUserIds = {};
   bool _isFetchingContacts = false;
   final List<Widget> _pages = [];
+  bool _isInitialized = false;  // Add flag to track initialization
 
   @override
   void initState() {
     super.initState();
+    print('ConnectionsPage: initState called');
     _checkProfileCompletion();
   }
 
+  @override
+  void dispose() {
+    print('ConnectionsPage: dispose called');
+    super.dispose();
+  }
+
   Future<void> _checkProfileCompletion() async {
+    if (_isInitialized) {
+      print('ConnectionsPage: Skipping _checkProfileCompletion - already initialized');
+      return;
+    }
+
+    print('ConnectionsPage: Starting _checkProfileCompletion');
     try {
       setState(() {
         _isLoading = true;
@@ -47,10 +61,11 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
           .get();
           
       if (!userDoc.exists) {
-        print('User document does not exist');
+        print('ConnectionsPage: User document does not exist');
         setState(() {
           _isProfileIncomplete = true;
           _isLoading = false;
+          _isInitialized = true;
         });
         return;
       }
@@ -60,6 +75,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
                          data['gender'] == null ||
                          data['mobileNumber'] == null;
                          
+      print('ConnectionsPage: Profile completion status: ${!isIncomplete}');
+      
       setState(() {
         _isProfileIncomplete = isIncomplete;
       });
@@ -77,10 +94,12 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
           UserProfilePage(user: widget.user),
         ]);
         _isLoading = false;
+        _isInitialized = true;
       });
 
       // Only fetch contacts if profile is complete
       if (!isIncomplete && !_isFetchingContacts) {
+        print('ConnectionsPage: Starting contact fetch');
         _fetchContactsInBackground();
       }
     } catch (e, stackTrace) {
@@ -89,20 +108,25 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
       setState(() {
         _isLoading = false;
         _isProfileIncomplete = true;
+        _isInitialized = true;
       });
     }
   }
 
   Future<void> _fetchContactsInBackground() async {
-    if (_isFetchingContacts) return;
+    if (_isFetchingContacts) {
+      print('ConnectionsPage: Contact fetch already in progress');
+      return;
+    }
     
+    print('ConnectionsPage: Starting _fetchContactsInBackground');
     setState(() {
       _isFetchingContacts = true;
     });
 
     try {
       if (!await FlutterContacts.requestPermission()) {
-        print('Contact permission denied');
+        print('ConnectionsPage: Contact permission denied');
         setState(() {
           _isFetchingContacts = false;
         });
@@ -123,6 +147,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 
       // Fetch contacts in chunks
       List<Contact> contacts = await FlutterContacts.getContacts(withProperties: true);
+      print('ConnectionsPage: Fetched ${contacts.length} contacts from device');
+      
       int chunkSize = 50;
       int totalContacts = contacts.length;
       
@@ -131,6 +157,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
       
       // Fetch all users in one query and create a lookup map
       QuerySnapshot userSnapshot = await FirebaseFirestore.instance.collection('users').get();
+      print('ConnectionsPage: Fetched ${userSnapshot.docs.length} users from Firestore');
+      
       for (var doc in userSnapshot.docs) {
         String phoneNumber = (doc.data() as Map<String, dynamic>)['mobileNumber'] as String? ?? '';
         phoneNumber = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
@@ -139,6 +167,11 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
 
       // Process contacts in chunks
       for (int i = 0; i < totalContacts; i += chunkSize) {
+        if (!mounted) {
+          print('ConnectionsPage: Widget no longer mounted, stopping contact processing');
+          return;
+        }
+
         int end = (i + chunkSize < totalContacts) ? i + chunkSize : totalContacts;
         List<Contact> chunk = contacts.sublist(i, end);
         
@@ -177,7 +210,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
         }
       }
       
-      print('Successfully fetched ${_contacts.length} contacts');
+      print('ConnectionsPage: Successfully processed ${_contacts.length} contacts');
     } catch (e, stackTrace) {
       print('Error in _fetchContacts: $e');
       print('Stack trace: $stackTrace');
@@ -191,6 +224,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   }
 
   void _onItemTapped(int index) {
+    print('ConnectionsPage: Tab changed to index $index');
     setState(() {
       _selectedIndex = index;
     });
