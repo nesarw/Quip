@@ -209,22 +209,25 @@ class _LoginPageState extends State<LoginPage> {
                             border: Border.all(color: Colors.white, width: 1.5),
                             borderRadius: BorderRadius.circular(45),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Image.asset(
-                                'assets/images/google.png',
-                                height: 30,
-                              ),
-                              SizedBox(width: 15),
-                              Text(
-                                'Google Signin',
-                                style: TextStyle(
-                                  fontSize: 30,
-                                  color: Colors.white,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Image.asset(
+                                  'assets/images/google.png',
+                                  height: 30,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 15),
+                                Text(
+                                  'Google Signin',
+                                  style: TextStyle(
+                                    fontSize: 30,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
