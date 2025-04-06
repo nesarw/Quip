@@ -41,6 +41,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Quip',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

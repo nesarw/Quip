@@ -212,13 +212,13 @@ class _LoginPageState extends State<LoginPage> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              Image.network(
-                                'https://cdn-icons-png.flaticon.com/512/300/300221.png',
+                              Image.asset(
+                                'assets/images/google.png',
                                 height: 30,
                               ),
                               SizedBox(width: 15),
                               Text(
-                                'Sign In with Google',
+                                'Google Signin',
                                 style: TextStyle(
                                   fontSize: 30,
                                   color: Colors.white,

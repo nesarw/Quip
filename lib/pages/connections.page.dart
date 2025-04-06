@@ -28,7 +28,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   final Map<String, String> _contactUserIds = {};
   bool _isFetchingContacts = false;
   final List<Widget> _pages = [];
-  bool _isInitialized = false;  // Add flag to track initialization
+  bool _isInitialized = false;
+  bool _isContactsPermissionDenied = false;
 
   @override
   void initState() {
@@ -129,6 +130,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
         print('ConnectionsPage: Contact permission denied');
         setState(() {
           _isFetchingContacts = false;
+          _isContactsPermissionDenied = true;
         });
         return;
       }
@@ -277,6 +279,82 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
         ),
       );
     }
+
+    if (_isContactsPermissionDenied && _selectedIndex == 0) {
+      return Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/loginpagebg.jpg'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.5),
+                  Colors.black.withOpacity(0.4),
+                ],
+              ),
+            ),
+            child: Center(
+              child: Container(
+                margin: EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.no_accounts, color: Colors.white, size: 48.0),
+                    SizedBox(height: 16.0),
+                    Text(
+                      'Please Allow Contacts for Connecting',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 16.0),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        side: BorderSide(color: Colors.white, width: 2.0),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isContactsPermissionDenied = false;
+                        });
+                        _fetchContactsInBackground();
+                      },
+                      child: Text('Try Again'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        bottomNavigationBar: CustomBottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) {
+            _onItemTapped(index);
+          },
+        ),
+        floatingActionButton: HeartFAB(
+          user: widget.user,
+        ),
+      );
+    }
+
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
@@ -328,74 +406,74 @@ class ConnectionsPageContent extends StatelessWidget {
             ],
           ),
         ),
-        child: Column(
-          children: <Widget>[
-            if (isProfileIncomplete) ...[
-              SizedBox(height: 20.0), // Add space from the top
-              ProfileIncomplete(user: user, userName: user.displayName ?? ''),
-            ],
-            Expanded(
-              child: contacts.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.sentiment_dissatisfied_sharp, color: Colors.grey, size: 50.0), // Sad face icon
-                          SizedBox(height: 10.0),
-                          Text(
-                            'No connections',
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 32,
-                              fontWeight: FontWeight.w200,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0),
-                          child: Text(
-                            'Connections',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 34,
-                              fontWeight: FontWeight.w300,
-                            ),
-                          ),
-                        ),
-                        ...contacts.map((contact) {
-                          String receiverUserId = parentState._contactUserIds[contact] ?? '';
-
-                          return Material(
-                            color: Colors.transparent,
-                            child: ListTile(
-                              title: Text(
-                                contact,
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              leading: Icon(Icons.person, color: Colors.white),
-                              trailing: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.black,
-                                  foregroundColor: Colors.white,
-                                  side: BorderSide(color: Colors.white, width: 2.0),
+        child: isProfileIncomplete
+            ? Center(
+                child: ProfileIncomplete(user: user, userName: user.displayName ?? ''),
+              )
+            : Column(
+                children: <Widget>[
+                  Expanded(
+                    child: contacts.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.sentiment_dissatisfied_sharp, color: Colors.grey, size: 50.0),
+                                SizedBox(height: 10.0),
+                                Text(
+                                  'No connections',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w200,
+                                  ),
                                 ),
-                                onPressed: () {
-                                  parentState._navigateToQuippNow(contact, receiverUserId);
-                                },
-                                child: Text('Quip now'),
-                              ),
+                              ],
                             ),
-                          );
-                        }),
-                      ],
-                    ),
-            ),
-          ],
-        ),
+                          )
+                        : ListView(
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(top: 50.0, left: 16.0, right: 16.0, bottom: 16.0),
+                                child: Text(
+                                  'Connections',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 34,
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                                ),
+                              ),
+                              ...contacts.map((contact) {
+                                String receiverUserId = parentState._contactUserIds[contact] ?? '';
+
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: ListTile(
+                                    title: Text(
+                                      contact,
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    leading: Icon(Icons.person, color: Colors.white),
+                                    trailing: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.black,
+                                        foregroundColor: Colors.white,
+                                        side: BorderSide(color: Colors.white, width: 2.0),
+                                      ),
+                                      onPressed: () {
+                                        parentState._navigateToQuippNow(contact, receiverUserId);
+                                      },
+                                      child: Text('Quip now'),
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
+                  ),
+                ],
+              ),
       ),
     );
   }

@@ -35,6 +35,6 @@ flutter:
 
   assets:
     - assets/images/loginpagebg.jpg
-    - assets/images/profile_photo.jpg
     - assets/images/appicon1.jpeg
     - assets/images/splashscreen.jpeg
+    - assets/images/google.png
